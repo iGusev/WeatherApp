@@ -12,7 +12,9 @@ class ViewController: UIViewController {
 
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view.
+//    NetworkServiceImpl().getWeather(latitude: 33.441792, longitude: -94.037689) { result in
+//      print(result)
+//    }
   }
 
 

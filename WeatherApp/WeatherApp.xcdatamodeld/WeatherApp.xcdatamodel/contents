@@ -1,4 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="1" systemVersion="11A491" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithCloudKit="false" userDefinedModelVersionIdentifier="">
-    <elements/>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="City" representedClassName="City" syncable="YES">
+        <attribute name="country" attributeType="String"/>
+        <attribute name="id" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="latitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="longitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="name" attributeType="String"/>
+        <attribute name="state" attributeType="String"/>
+    </entity>
+    <entity name="CurrentWeather" representedClassName="CurrentWeather" syncable="YES">
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="feelsLike" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="humidity" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="pressure" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="temp" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="uvindex" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="weatherDescription" attributeType="String"/>
+        <attribute name="weatherIcon" attributeType="String"/>
+        <attribute name="windSpeed" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+    </entity>
+    <entity name="ForecastWeather" representedClassName="ForecastWeather" syncable="YES">
+        <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="tempDay" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="tempNight" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="weatherIcon" attributeType="String"/>
+    </entity>
+    <elements>
+        <element name="City" positionX="-63" positionY="-18" width="128" height="133"/>
+        <element name="CurrentWeather" positionX="-54" positionY="36" width="128" height="178"/>
+        <element name="ForecastWeather" positionX="-36" positionY="99" width="128" height="103"/>
+    </elements>
 </model>
