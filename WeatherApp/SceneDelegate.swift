@@ -11,7 +11,7 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
   var window: UIWindow?
-  let coreDataStack = CoreDataStack()
+  let databaseService: DatabaseServiceProtocol = CoreDataStack()
 
   func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
     guard let windowScene = (scene as? UIWindowScene) else { return }
@@ -24,15 +24,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   }
 
   func sceneDidDisconnect(_ scene: UIScene) {
-    coreDataStack.saveContext()
+    databaseService.save()
   }
 
   func sceneWillResignActive(_ scene: UIScene) {
-    coreDataStack.saveContext()
+    databaseService.save()
   }
 
   func sceneDidEnterBackground(_ scene: UIScene) {
-    coreDataStack.saveContext()
+    databaseService.save()
   }
 
 

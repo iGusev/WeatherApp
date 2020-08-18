@@ -8,13 +8,13 @@
 
 import Foundation
 
-protocol NetworkService {
+protocol NetworkServiceProtocol {
   func getWeather(latitude: Double,
                   longitude: Double,
                   completion: @escaping (Result<[String: Any]?,Error>) -> Void)
 }
 
-class NetworkServiceImpl: NetworkService {
+final class NetworkService: NetworkServiceProtocol {
   
   private let baseURL: String = "https://api.openweathermap.org/data/2.5/onecall"
   private let apiKey: String = "772673b3efd53c9a74c8a5c6ec2fea33"

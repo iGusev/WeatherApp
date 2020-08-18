@@ -10,23 +10,31 @@ import Foundation
 
 protocol Presenter {
   var currentWeatherModel: CurrentWeatherViewModel? {get set}
-//  var forecastWeatherModels
+  var forecastWeatherModels: [ForecastWeatherViewModel]? {get set}
 //  var error: Error? {get set}
 
-  func loadDataFromNetwork()
-  func loadDataFromDatabase()
+  func loadData()
 }
 
 class WeatherPresenter: Presenter {
   var currentWeatherModel: CurrentWeatherViewModel?
+  var forecastWeatherModels: [ForecastWeatherViewModel]?
   
-  func loadDataFromNetwork() {
-    
+  private let networkService: NetworkServiceProtocol
+  private let databaseService: DatabaseServiceProtocol
+  private let locationService: LocationServiceProtocol
+  
+  // MARK: - Init
+  init(networkService: NetworkServiceProtocol,
+       databaseService: DatabaseServiceProtocol,
+       locationService: LocationServiceProtocol) {
+    self.networkService = networkService
+    self.databaseService = databaseService
+    self.locationService = locationService
   }
   
-  func loadDataFromDatabase() {
+  func loadData() {
     
   }
-  
   
 }

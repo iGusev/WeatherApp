@@ -8,7 +8,7 @@
 
 import CoreData
 
-final class CoreDataStack {
+final class CoreDataStack: DatabaseServiceProtocol {
   
 // MARK: - Core Data stack
 
@@ -24,7 +24,7 @@ final class CoreDataStack {
 
  // MARK: - Core Data Saving support
 
- func saveContext() {
+ func save() {
     let context = self.persistentContainer.viewContext
      if context.hasChanges {
          do {
