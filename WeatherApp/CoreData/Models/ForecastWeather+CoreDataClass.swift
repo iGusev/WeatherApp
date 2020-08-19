@@ -13,17 +13,23 @@ import CoreData
 @objc(ForecastWeather)
 public final class ForecastWeather: NSManagedObject {
   
-//  init(date: Date,
-//       tempDay: Double,
-//       tempNight: Double,
-//       weatherIcon: String,
-//       in context: NSManagedObjectContext) {
-//    let entity = NSEntityDescription.entity(forEntityName: "ForecastWeather", in: context)
-//    super.init(entity: entity, insertInto: context)
-//    self.date = date
-//    self.tempDay = tempDay
-//    self.tempNight = tempNight
-//    self.weatherIcon = weatherIcon
-//  }
+  convenience init?(json: [String : Any],
+       service: DatabaseServiceProtocol) {
+    guard let coreDataStack = service as? CoreDataStack else {return nil}
+    let context = coreDataStack.context
+    guard let entity = NSEntityDescription.entity(
+      forEntityName: String(describing: ForecastWeather.self),
+      in: context) else {return nil}
+    self.init(entity: entity, insertInto: context)
+    
+    guard let timeInterval = json["dt"] as? TimeInterval,
+          let temperature = json["temp"] as? [String : Any],
+          let weather = json["weather"] as? [[String : Any]] else {return}
+    self.date = Date(timeIntervalSince1970: timeInterval)
+    self.tempDay = temperature["day"] as? Double ?? 0
+    self.tempNight = temperature["night"] as? Double ?? 0
+    self.weatherIcon = weather[0]["icon"] as? String ?? ""
+    print(self)
+  }
   
 }

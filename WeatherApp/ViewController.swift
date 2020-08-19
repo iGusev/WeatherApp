@@ -9,12 +9,12 @@
 import UIKit
 
 class ViewController: UIViewController {
+  
+  private var presenter: WeatherPresenter = WeatherPresenter(networkService: NetworkService(), databaseService: CoreDataStack(), locationService: LocationService())
 
   override func viewDidLoad() {
     super.viewDidLoad()
-//    NetworkService().getWeather(latitude: 33.441792, longitude: -94.037689) { result in
-//      print(result)
-//    }
+    presenter.loadData()
   }
 
 

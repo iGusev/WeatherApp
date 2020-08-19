@@ -8,6 +8,20 @@
 
 import Foundation
 
+enum FetchingError: Error {
+  case responseNotValid
+}
+
+extension FetchingError: LocalizedError {
+  public var errorDescription: String? {
+    switch self {
+    case .responseNotValid:
+      return "Ответ сервера не поддерживается"
+    }
+  }
+}
+
+
 protocol NetworkServiceProtocol {
   func getWeather(latitude: Double,
                   longitude: Double,
@@ -46,7 +60,9 @@ final class NetworkService: NetworkServiceProtocol {
         let response = response as? HTTPURLResponse,
         response.statusCode == 200 {
         do {
-          let responseObject = (try JSONSerialization.jsonObject(with: data)) as? [String: Any]
+          let responseObject = (try JSONSerialization.jsonObject(
+            with: data,
+            options: .allowFragments)) as? [String: Any]
           completion(.success(responseObject))
         } catch {
           completion(.failure(error))

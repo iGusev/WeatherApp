@@ -14,7 +14,7 @@
         <attribute name="humidity" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="pressure" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="temp" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
-        <attribute name="uvindex" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="uvIndex" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="weatherDescription" attributeType="String"/>
         <attribute name="weatherIcon" attributeType="String"/>
         <attribute name="windSpeed" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

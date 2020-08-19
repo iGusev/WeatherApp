@@ -21,20 +21,24 @@ final class CoreDataStack: DatabaseServiceProtocol {
      })
      return container
  }()
+  
+  public var context: NSManagedObjectContext {
+    return self.persistentContainer.viewContext
+  }
 
  // MARK: - Core Data Saving support
 
  func save() {
-    let context = self.persistentContainer.viewContext
-     if context.hasChanges {
-         do {
-            try context.save()
-         } catch {
-            context.rollback()
-            let nserror = error as NSError
-            fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-         }
+  if self.context.hasChanges {
+     do {
+      try self.context.save()
+      print("Changes in context saved")
+     } catch {
+      self.context.rollback()
+      let nserror = error as NSError
+      fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
      }
+   }
  }
   
 }
