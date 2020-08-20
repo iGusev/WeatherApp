@@ -36,8 +36,9 @@ final class WeatherPresenter: WeatherPresenterProtocol {
   }
   
   func loadData() {
-    self.locationService.requestLocation()
-
+    DispatchQueue.main.async {
+      self.locationService.requestLocation()
+    }
   }
   
   func loadData(for location: String) {
@@ -53,20 +54,50 @@ final class WeatherPresenter: WeatherPresenterProtocol {
               let currentWeather: [String : Any] = responseDictionary["current"] as? [String : Any]
           else {
             print(FetchingError.responseNotValid)
-          return
+            return
+          }
+        
+        
+        guard let coreDataStack = self.databaseService as? CoreDataStack else {return}
+        let privateContext = coreDataStack.makePrivateContext()
+        let mainContext = coreDataStack.mainContext
+        
+        privateContext.performAndWait {
+          self.databaseService.deleteOldWeatherData()
+          DispatchQueue.global().async {
+            for item in forecasts {
+              _ = ForecastWeather(json: item, in: privateContext)
+            }
+            _ = CurrentWeather(json: currentWeather, in: privateContext)
+            
+            DispatchQueue.main.async {
+              guard privateContext.hasChanges else {return}
+              do {
+                try privateContext.save()
+                mainContext.perform {
+                  do {
+                    try mainContext.save()
+                  } catch {
+                  let nserror = error as NSError
+                  fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+                  }
+                }
+              } catch {
+                let nserror = error as NSError
+                fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+              }
+            }
+          }
         }
-        for item in forecasts {
-          _ = ForecastWeather(json: item, service: self.databaseService)
-        }
-        _ = CurrentWeather(json: currentWeather, service: self.databaseService)
-        self.databaseService.save()
-      case . failure(let error):
+        
+      case .failure(let error):
         print(error)
       }
     }
   }
 
 }
+
 
 extension WeatherPresenter: LocationDelegate {
   func didReceiveLocation() {

@@ -24,15 +24,15 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   }
 
   func sceneDidDisconnect(_ scene: UIScene) {
-    databaseService.save()
+    self.databaseService.save()
   }
 
   func sceneWillResignActive(_ scene: UIScene) {
-    databaseService.save()
+    self.databaseService.save()
   }
 
   func sceneDidEnterBackground(_ scene: UIScene) {
-    databaseService.save()
+    self.databaseService.save()
   }
 
 

@@ -49,9 +49,11 @@ final class LocationService: NSObject, LocationServiceProtocol {
   
   /// Запрос местоположения
   public func requestLocation() {
-    if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-      self.locationManager.requestLocation()
-    }
+//    DispatchQueue.main.async {
+      if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
+        self.locationManager.requestLocation()
+      }
+//    }
   }
   
   private func configureLocationManager() {

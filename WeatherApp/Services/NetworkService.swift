@@ -26,6 +26,8 @@ protocol NetworkServiceProtocol {
   func getWeather(latitude: Double,
                   longitude: Double,
                   completion: @escaping (Result<[String: Any]?,Error>) -> Void)
+  
+  func getCities(completion: @escaping (Result<[[String: Any]]?,Error>) -> Void)
 }
 
 final class NetworkService: NetworkServiceProtocol {
@@ -50,26 +52,57 @@ final class NetworkService: NetworkServiceProtocol {
     
     let session = URLSession(configuration: .default)
     guard let url = urlComponents?.url else {return}
-    print(url)
 
     let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
-      if let error = error {
-        completion(.failure(error))
-      } else if
-        let data = data,
-        let response = response as? HTTPURLResponse,
-        response.statusCode == 200 {
-        do {
-          let responseObject = (try JSONSerialization.jsonObject(
-            with: data,
-            options: .allowFragments)) as? [String: Any]
-          completion(.success(responseObject))
-        } catch {
+      DispatchQueue.global().async {
+        if let error = error {
           completion(.failure(error))
+        } else if
+          let data = data,
+          let response = response as? HTTPURLResponse,
+          response.statusCode == 200 {
+          do {
+            let responseObject = (try JSONSerialization.jsonObject(
+              with: data,
+              options: .allowFragments)) as? [String: Any]
+            completion(.success(responseObject))
+          } catch {
+            completion(.failure(error))
+          }
         }
       }
     }
     
+    dataTask?.resume()
+  }
+  
+  
+  func getCities(completion: @escaping (Result<[[String: Any]]?,Error>) -> Void) {
+    guard let url: URL = URL(string: "http://bulk.openweathermap.org/sample/city.list.json.gz") else {return}
+    
+    let session = URLSession(configuration: .default)
+
+    let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
+      DispatchQueue.global().async {
+        if let error = error {
+          completion(.failure(error))
+        } else if
+          let data = data,
+          let response = response as? HTTPURLResponse,
+          response.statusCode == 200 {
+          do {
+            let nsData: NSData = NSData(data: data)
+            guard let decompressedData = nsData.gunzipped() else {return}
+            let responseObject = (try JSONSerialization.jsonObject(
+              with: decompressedData,
+              options: .allowFragments)) as? [[String: Any]]
+            completion(.success(responseObject))
+          } catch {
+            completion(.failure(error))
+          }
+        }
+      }
+    }
     dataTask?.resume()
   }
 }

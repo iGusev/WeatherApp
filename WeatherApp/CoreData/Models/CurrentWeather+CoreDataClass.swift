@@ -13,10 +13,7 @@ import CoreData
 @objc(CurrentWeather)
 public class CurrentWeather: NSManagedObject {
   
-  convenience init?(json: [String : Any],
-       service: DatabaseServiceProtocol) {
-    guard let coreDataStack = service as? CoreDataStack else {return nil}
-    let context = coreDataStack.context
+  convenience init?(json: [String : Any], in context: NSManagedObjectContext) {
     guard let entity = NSEntityDescription.entity(
       forEntityName: String(describing: CurrentWeather.self),
       in: context) else {return nil}
@@ -33,6 +30,6 @@ public class CurrentWeather: NSManagedObject {
     self.windSpeed = json["wind_speed"] as? Double ?? 0
     self.weatherIcon = weather[0]["icon"] as? String ?? ""
     self.weatherDescription = weather[0]["description"] as? String ?? ""
-    print(self)
+
   }
 }

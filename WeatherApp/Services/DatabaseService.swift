@@ -9,6 +9,9 @@
 import Foundation
 
 protocol DatabaseServiceProtocol {
-  
   func save()
+  func deleteOldWeatherData()
+  func deleteCitiesData()
+  func fetchRequest<T>() -> [T]?
 }
+

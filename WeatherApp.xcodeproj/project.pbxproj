@@ -11,6 +11,8 @@
 		702BB8FF24EC62FF00FE8DDD /* DatabaseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702BB8FE24EC62FF00FE8DDD /* DatabaseService.swift */; };
 		702BB90124EC64E900FE8DDD /* LocationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 702BB90024EC64E900FE8DDD /* LocationService.swift */; };
 		706FA21324ECB7BE009C6E3D /* CitiesPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706FA21224ECB7BE009C6E3D /* CitiesPresenter.swift */; };
+		706FA21524ECB8BB009C6E3D /* CityViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 706FA21424ECB8BB009C6E3D /* CityViewModel.swift */; };
+		7075684E24EDCF6B004D2093 /* NSData+GZIP.m in Sources */ = {isa = PBXBuildFile; fileRef = 7075684D24EDCF6B004D2093 /* NSData+GZIP.m */; };
 		70A4E51624E976F500F2BEA4 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A4E51524E976F500F2BEA4 /* AppDelegate.swift */; };
 		70A4E51824E976F500F2BEA4 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A4E51724E976F500F2BEA4 /* SceneDelegate.swift */; };
 		70A4E51A24E976F500F2BEA4 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 70A4E51924E976F500F2BEA4 /* ViewController.swift */; };
@@ -34,6 +36,10 @@
 		702BB8FE24EC62FF00FE8DDD /* DatabaseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DatabaseService.swift; sourceTree = "<group>"; };
 		702BB90024EC64E900FE8DDD /* LocationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationService.swift; sourceTree = "<group>"; };
 		706FA21224ECB7BE009C6E3D /* CitiesPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CitiesPresenter.swift; sourceTree = "<group>"; };
+		706FA21424ECB8BB009C6E3D /* CityViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CityViewModel.swift; sourceTree = "<group>"; };
+		7075684B24EDCF6A004D2093 /* WeatherApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WeatherApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		7075684C24EDCF6B004D2093 /* NSData+GZIP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+GZIP.h"; sourceTree = "<group>"; };
+		7075684D24EDCF6B004D2093 /* NSData+GZIP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+GZIP.m"; sourceTree = "<group>"; };
 		70A4E51224E976F500F2BEA4 /* WeatherApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WeatherApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		70A4E51524E976F500F2BEA4 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		70A4E51724E976F500F2BEA4 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -65,6 +71,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		7075683824ED9D46004D2093 /* GZip */ = {
+			isa = PBXGroup;
+			children = (
+				7075684C24EDCF6B004D2093 /* NSData+GZIP.h */,
+				7075684D24EDCF6B004D2093 /* NSData+GZIP.m */,
+				7075684B24EDCF6A004D2093 /* WeatherApp-Bridging-Header.h */,
+			);
+			path = GZip;
+			sourceTree = "<group>";
+		};
 		70A4E50924E976F500F2BEA4 = {
 			isa = PBXGroup;
 			children = (
@@ -84,6 +100,7 @@
 		70A4E51424E976F500F2BEA4 /* WeatherApp */ = {
 			isa = PBXGroup;
 			children = (
+				7075683824ED9D46004D2093 /* GZip */,
 				70EB766724EC4FE1006A5670 /* Services */,
 				70E77C6C24EC1823004090B6 /* CoreData */,
 				70EB766A24EC50F4006A5670 /* ViewModels */,
@@ -103,8 +120,8 @@
 		70E77C6C24EC1823004090B6 /* CoreData */ = {
 			isa = PBXGroup;
 			children = (
-				70E77C7B24EC2997004090B6 /* Models */,
 				70E77C6D24EC1838004090B6 /* CoreDataStack.swift */,
+				70E77C7B24EC2997004090B6 /* Models */,
 			);
 			path = CoreData;
 			sourceTree = "<group>";
@@ -137,6 +154,7 @@
 			children = (
 				70EB766B24EC5123006A5670 /* CurrentWeatherViewModel.swift */,
 				702BB8FC24EC60CF00FE8DDD /* ForecastWeatherViewModel.swift */,
+				706FA21424ECB8BB009C6E3D /* CityViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -173,6 +191,7 @@
 				TargetAttributes = {
 					70A4E51124E976F500F2BEA4 = {
 						CreatedOnToolsVersion = 11.6;
+						LastSwiftMigration = 1160;
 					};
 				};
 			};
@@ -212,6 +231,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				70E77C8624EC2997004090B6 /* CurrentWeather+CoreDataProperties.swift in Sources */,
+				7075684E24EDCF6B004D2093 /* NSData+GZIP.m in Sources */,
 				70E77C8724EC2997004090B6 /* City+CoreDataClass.swift in Sources */,
 				70E77C8224EC2997004090B6 /* ForecastWeather+CoreDataProperties.swift in Sources */,
 				70EB766C24EC5123006A5670 /* CurrentWeatherViewModel.swift in Sources */,
@@ -228,6 +248,7 @@
 				70EB766924EC5049006A5670 /* NetworkService.swift in Sources */,
 				706FA21324ECB7BE009C6E3D /* CitiesPresenter.swift in Sources */,
 				702BB90124EC64E900FE8DDD /* LocationService.swift in Sources */,
+				706FA21524ECB8BB009C6E3D /* CityViewModel.swift in Sources */,
 				70E77C8324EC2997004090B6 /* ForecastWeather+CoreDataClass.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -364,6 +385,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73BDKJQMBT;
 				INFOPLIST_FILE = WeatherApp/Info.plist;
@@ -373,6 +395,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = mine.WeatherApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "WeatherApp/GZip/WeatherApp-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
@@ -382,6 +406,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 73BDKJQMBT;
 				INFOPLIST_FILE = WeatherApp/Info.plist;
@@ -391,6 +416,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = mine.WeatherApp;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "WeatherApp/GZip/WeatherApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
