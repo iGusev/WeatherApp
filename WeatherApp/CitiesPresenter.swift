@@ -41,7 +41,7 @@ final class CitiesPresenter: CitiesPresenterProtocol {
         let privateContext = coreDataStack.makePrivateContext()
         let mainContext = coreDataStack.mainContext
         
-        privateContext.performAndWait {
+        privateContext.perform {
           self.databaseService.deleteCitiesData()
           DispatchQueue.global().async {
             for city in cities {
@@ -52,7 +52,7 @@ final class CitiesPresenter: CitiesPresenterProtocol {
               guard privateContext.hasChanges else {return}
               do {
                 try privateContext.save()
-                mainContext.perform {
+                mainContext.performAndWait {
                   do {
                     try mainContext.save()
                   } catch {

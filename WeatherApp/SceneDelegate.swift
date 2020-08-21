@@ -19,7 +19,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     self.window?.windowScene = windowScene
 //    let builder = Builder()
 //    self.window?.rootViewController = builder.build()
-    self.window?.rootViewController = ViewController()
+    let presenter = WeatherPresenter(networkService: NetworkService(), databaseService: databaseService, locationService: LocationService())
+    let vc = WeatherViewController(presenter: presenter)
+    self.window?.rootViewController = vc
+    presenter.viewController = vc
     self.window?.makeKeyAndVisible()
   }
 

@@ -55,7 +55,7 @@ final class CoreDataStack: DatabaseServiceProtocol {
   
   func deleteOldWeatherData() {
     let privateContext = self.makePrivateContext()
-    privateContext.performAndWait {
+    privateContext.perform {
       let currentRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(
         entityName: String(describing: CurrentWeather.self))
       let deleteCurrentRequest: NSBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: currentRequest)
@@ -81,7 +81,7 @@ final class CoreDataStack: DatabaseServiceProtocol {
   
   func deleteCitiesData() {
     let privateContext = self.makePrivateContext()
-    privateContext.performAndWait {
+    privateContext.perform {
       let citiesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(
         entityName: String(describing: City.self))
       let deleteRequest: NSBatchDeleteRequest = NSBatchDeleteRequest(fetchRequest: citiesRequest)
