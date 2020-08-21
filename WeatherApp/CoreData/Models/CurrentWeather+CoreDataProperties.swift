@@ -2,7 +2,7 @@
 //  CurrentWeather+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Anastasia Romanova on 19.08.2020.
+//  Created by Anastasia Romanova on 21.08.2020.
 //  Copyright © 2020 Anastasia Romanova. All rights reserved.
 //
 //
@@ -26,5 +26,7 @@ extension CurrentWeather {
     @NSManaged public var weatherDescription: String?
     @NSManaged public var weatherIcon: String?
     @NSManaged public var windSpeed: Double
+    @NSManaged public var latitude: Double
+    @NSManaged public var longitude: Double
 
 }

@@ -10,7 +10,7 @@ import Foundation
 
 protocol WeatherPresenterProtocol {
   var currentWeatherModel: CurrentWeatherViewModel? {get set}
-  var forecastWeatherModels: [ForecastWeatherViewModel]? {get set}
+  var forecastWeatherModels: [ForecastWeatherViewModel] {get set}
 //  var error: Error? {get set}
 
   func loadData()
@@ -19,7 +19,7 @@ protocol WeatherPresenterProtocol {
 
 final class WeatherPresenter: WeatherPresenterProtocol {
   var currentWeatherModel: CurrentWeatherViewModel?
-  var forecastWeatherModels: [ForecastWeatherViewModel]?
+  var forecastWeatherModels: [ForecastWeatherViewModel] = []
   weak var viewController: WeatherViewController?
   
   private let networkService: NetworkServiceProtocol
@@ -27,6 +27,9 @@ final class WeatherPresenter: WeatherPresenterProtocol {
   private let locationService: LocationServiceProtocol
   
   private var currentWeather: CurrentWeather?
+  private var forecastWeathers: [ForecastWeather] = []
+  private var isLoading: Bool = false
+  
   private var dateFormatter: DateFormatter {
     let dateFormatter = DateFormatter()
     dateFormatter.dateFormat = "dd.MM"
@@ -48,20 +51,35 @@ final class WeatherPresenter: WeatherPresenterProtocol {
     guard let weatherModel = self.currentWeather,
           let date = weatherModel.date else {return}
     let formattedDate = self.dateFormatter.string(from: date)
-    self.currentWeatherModel = CurrentWeatherViewModel(temp: String(weatherModel.temp),
-                                                       feelsLike: String(weatherModel.feelsLike),
-                                                       pressure: String(weatherModel.pressure),
-                                                       humidity: String(weatherModel.humidity),
-                                                       uvIndex: String(weatherModel.uvIndex),
-                                                       windSpeed: String(weatherModel.windSpeed),
-                                                       date: formattedDate,
-                                                       weatherDescription: weatherModel.weatherDescription ?? "",
-                                                       weatherIcon: nil)
+    self.currentWeatherModel = CurrentWeatherViewModel(
+      temp: String(format: "%.0f", weatherModel.temp.rounded()),
+      feelsLike: String(format: "%.0f", weatherModel.feelsLike.rounded()),
+      pressure: String(weatherModel.pressure),
+      humidity: String(weatherModel.humidity),
+      uvIndex: String(format: "%.0f", weatherModel.uvIndex.rounded()),
+      windSpeed: String(weatherModel.windSpeed),
+      date: formattedDate,
+      weatherDescription: weatherModel.weatherDescription ?? "",
+      weatherIcon: nil)
   }
+  
+  private func forecastWeatherViewModels() {
+    for weather in self.forecastWeathers {
+      guard let date = weather.date else {return}
+      let formattedDate = self.dateFormatter.string(from: date)
+      let forecastWeatherModel = ForecastWeatherViewModel(
+        tempDay: String(format: "%.0f", weather.tempDay.rounded()),
+        tempNight: String(format: "%.0f", weather.tempNight.rounded()),
+        date: formattedDate,
+        weatherIcon: nil)
+      self.forecastWeatherModels.append(forecastWeatherModel)
+    }
+   }
   
   func loadData() {
     DispatchQueue.main.async {
       self.locationService.requestLocation()
+      self.isLoading = true
     }
   }
   
@@ -73,9 +91,8 @@ final class WeatherPresenter: WeatherPresenterProtocol {
     self.networkService.getWeather(latitude: latitude, longitude: longitude) { result in
       switch result {
       case .success(let json):
-        guard let responseDictionary: [String : Any] = json,
-              let forecasts: [[String : Any]] = responseDictionary["daily"] as? [[String : Any]],
-              let currentWeather: [String : Any] = responseDictionary["current"] as? [String : Any]
+        guard let weather: [String : Any] = json,
+              let forecasts: [[String : Any]] = weather["daily"] as? [[String : Any]]
           else {
             print(FetchingError.responseNotValid)
             return
@@ -90,9 +107,11 @@ final class WeatherPresenter: WeatherPresenterProtocol {
           self.databaseService.deleteOldWeatherData()
           DispatchQueue.global().async {
             for item in forecasts {
-              _ = ForecastWeather(json: item, in: privateContext)
+              guard let forecastWeather = ForecastWeather(json: item, in: privateContext)
+                else {return}
+              self.forecastWeathers.append(forecastWeather)
             }
-            self.currentWeather = CurrentWeather(json: currentWeather, in: privateContext)
+            self.currentWeather = CurrentWeather(json: weather, in: privateContext)
             
             DispatchQueue.main.async {
               guard privateContext.hasChanges else {return}
@@ -126,14 +145,18 @@ final class WeatherPresenter: WeatherPresenterProtocol {
 
 extension WeatherPresenter: LocationDelegate {
   func didReceiveLocation() {
+    guard !self.isLoading else {return}
     if let location = self.locationService.location {
       self.loadDataFor(latitude: location.coordinate.latitude,
                        longitude: location.coordinate.longitude) {
         self.currentWeatherViewModel()
+        self.forecastWeatherViewModels()
         self.viewController?.updateView()
+        self.isLoading = false
       }
     } else {
       print(LocationError.cannotGetCurrentLocation.localizedDescription)
+      self.isLoading = false
     }
   }
 }

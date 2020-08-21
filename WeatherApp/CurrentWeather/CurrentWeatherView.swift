@@ -46,21 +46,22 @@ class CurrentWeatherView: UIView {
     ])
   }
 
-  
   public func configure(with model: CurrentWeatherViewModel) {
     self.currentDateLabel.text = model.date
     self.weatherIcon.image = model.weatherIcon
-    self.currentTemperatureLabel.text = model.temp
+    self.currentTemperatureLabel.text = "\(model.temp)\u{00B0}C"
     self.weatherDescriptionLabel?.text = model.weatherDescription
-    self.feelsLikeLabel?.text = "Ощущается как \(model.feelsLike)"
-    self.pressureLabel?.text = "Давление \(model.pressure)"
-    self.humidityLabel?.text = "Влажность воздуха \(model.humidity)"
-    self.windSpeedLabel?.text = "Скорость ветра \(model.windSpeed)"
+    self.feelsLikeLabel?.text = "Ощущается как \(model.feelsLike)\u{00B0}C"
+    self.pressureLabel?.text = "Давление \(model.pressure) мм рт. ст."
+    self.humidityLabel?.text = "Влажность воздуха \(model.humidity)%"
+    self.windSpeedLabel?.text = "Скорость ветра \(model.windSpeed) м/с"
     self.uvIndexLabel?.text = "УФ-индекс \(model.uvIndex)"
     self.weatherDetailsView.setNeedsLayout()
   }
   
   private func configureUI() {
+    self.currentDateLabel.text = nil
+    self.currentTemperatureLabel.text = nil
     self.configureWeatherDescriptionLabel()
     self.configureFeelsLikeLabel()
     self.configurePressureLabel()
@@ -72,8 +73,8 @@ class CurrentWeatherView: UIView {
   private func configureWeatherDescriptionLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 22)
-//    label.translatesAutoresizingMaskIntoConstraints = false
-
+    label.backgroundColor = .systemGray3
+    
     self.weatherDetailsView.addArrangedSubview(label)
     self.weatherDescriptionLabel = label
   }
@@ -81,45 +82,45 @@ class CurrentWeatherView: UIView {
   private func configureFeelsLikeLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
-//    label.translatesAutoresizingMaskIntoConstraints = false
+    label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
     self.feelsLikeLabel = label
   }
    
   private func configurePressureLabel() {
-   let label = UILabel()
-   label.font = UIFont.systemFont(ofSize: 18)
-//   label.translatesAutoresizingMaskIntoConstraints = false
+    let label = UILabel()
+    label.font = UIFont.systemFont(ofSize: 18)
+    label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
     self.pressureLabel = label
   }
   
   private func configureHumidityLabel() {
-   let label = UILabel()
-   label.font = UIFont.systemFont(ofSize: 18)
-//   label.translatesAutoresizingMaskIntoConstraints = false
+    let label = UILabel()
+    label.font = UIFont.systemFont(ofSize: 18)
+    label.backgroundColor = .systemGray3
 
-   self.weatherDetailsView.addArrangedSubview(label)
+    self.weatherDetailsView.addArrangedSubview(label)
     self.humidityLabel = label
   }
   
   private func configureWindSpeedLabel() {
-   let label = UILabel()
-   label.font = UIFont.systemFont(ofSize: 18)
-//   label.translatesAutoresizingMaskIntoConstraints = false
+    let label = UILabel()
+    label.font = UIFont.systemFont(ofSize: 18)
+    label.backgroundColor = .systemGray3
 
-   self.weatherDetailsView.addArrangedSubview(label)
+    self.weatherDetailsView.addArrangedSubview(label)
     self.windSpeedLabel = label
   }
   
   private func configureUVIndexLabel() {
-   let label = UILabel()
-   label.font = UIFont.systemFont(ofSize: 18)
-//   label.translatesAutoresizingMaskIntoConstraints = false
-
-   self.weatherDetailsView.addArrangedSubview(label)
+    let label = UILabel()
+    label.font = UIFont.systemFont(ofSize: 18)
+    label.backgroundColor = .systemGray3
+      
+    self.weatherDetailsView.addArrangedSubview(label)
     self.uvIndexLabel = label
   }
 }

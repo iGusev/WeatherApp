@@ -9,13 +9,13 @@
 import UIKit
 
 class WeatherViewController: UIViewController {
-  
-  private let databaseService = CoreDataStack()
+
   private var currentWeatherView: CurrentWeatherView?
+  private var forecastWeatherView: ForecastWeatherCollectionView?
+  
+  private let itemMargin: CGFloat = 20
+  
   private var presenter: WeatherPresenter
-  private var citiesPresenter: CitiesPresenter {
-    return CitiesPresenter(networkService: NetworkService(), databaseService: databaseService)
-  }
 
   // MARK: - Init
    init(presenter: WeatherPresenter) {
@@ -29,26 +29,69 @@ class WeatherViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-//    self.presenter.viewController = self
+    self.configureUI()
+    self.presenter.loadData()
+  }
+  
+  private func configureUI() {
+    self.view.backgroundColor = .systemGray3
+    
     self.currentWeatherView = CurrentWeatherView()
-    guard let currentWeatherView = self.currentWeatherView else {return}
+    self.forecastWeatherView = ForecastWeatherCollectionView()
+    guard let currentWeatherView = self.currentWeatherView,
+          let forecastWeatherView = self.forecastWeatherView else {return}
     self.view.addSubview(currentWeatherView)
+    self.view.addSubview(forecastWeatherView)
+    
     currentWeatherView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
       currentWeatherView.leadingAnchor.constraint(equalTo: self.view.leadingAnchor),
       currentWeatherView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
-      currentWeatherView.topAnchor.constraint(equalTo: self.view.topAnchor),
-      currentWeatherView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor)
+      currentWeatherView.topAnchor.constraint(equalTo: self.view.topAnchor)
     ])
-    self.presenter.loadData()
-//    citiesPresenter.loadCities()
+    
+    forecastWeatherView.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      forecastWeatherView.leadingAnchor.constraint(
+        equalTo: self.view.leadingAnchor),
+      forecastWeatherView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
+      forecastWeatherView.bottomAnchor.constraint(equalTo: self.view.bottomAnchor),
+      forecastWeatherView.topAnchor.constraint(
+        equalTo: currentWeatherView.bottomAnchor, constant: self.itemMargin)
+    ])
+    
+    forecastWeatherView.delegate = self
+    forecastWeatherView.dataSource = self
   }
   
   public func updateView() {
-    guard let viewModel = self.presenter.currentWeatherModel else {return}
-    self.currentWeatherView?.configure(with: viewModel)
+    guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
+    self.currentWeatherView?.configure(with: currentWeatherViewModel)
+    self.forecastWeatherView?.reloadData()
     self.view.setNeedsLayout()
   }
 
 }
 
+extension WeatherViewController:
+          UICollectionViewDelegate,
+          UICollectionViewDataSource,
+          UICollectionViewDelegateFlowLayout {
+  func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+    self.presenter.forecastWeatherModels.count
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+    let cell = self.forecastWeatherView?.dequeueReusableCell(
+      withReuseIdentifier: ForecastWeatherViewCell.cellIdentifier,
+      for: indexPath) as! ForecastWeatherViewCell
+    cell.configure(with: self.presenter.forecastWeatherModels[indexPath.item])
+    return cell
+  }
+  
+  func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+    let itemWidth = collectionView.frame.width / 3
+    return CGSize(width: itemWidth, height: itemWidth)
+  }
+  
+}

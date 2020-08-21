@@ -6,11 +6,11 @@
 //  Copyright © 2020 Anastasia Romanova. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 struct ForecastWeatherViewModel {
   public let tempDay: String
   public let tempNight: String
   public let date: String
-  public let weatherIcon: String
+  public let weatherIcon: UIImage?
 }
