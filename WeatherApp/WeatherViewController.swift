@@ -15,6 +15,8 @@ class WeatherViewController: UIViewController {
   
   private let itemMargin: CGFloat = 20
   
+  private var isUpdating: Bool = false
+  
   private var presenter: WeatherPresenter
 
   // MARK: - Init
@@ -65,10 +67,14 @@ class WeatherViewController: UIViewController {
   }
   
   public func updateView() {
+//    guard !self.isUpdating else {return}
     guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
+    self.isUpdating = true
     self.currentWeatherView?.configure(with: currentWeatherViewModel)
     self.forecastWeatherView?.reloadData()
+    self.isUpdating = false
     self.view.setNeedsLayout()
+    self.view.layoutIfNeeded()
   }
 
 }

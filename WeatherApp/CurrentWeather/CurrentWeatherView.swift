@@ -15,6 +15,7 @@ class CurrentWeatherView: UIView {
   @IBOutlet weak var currentTemperatureLabel: UILabel!
   @IBOutlet weak var weatherDetailsView: UIStackView!
   
+  private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
   private var weatherDescriptionLabel: UILabel?
   private var feelsLikeLabel: UILabel?
   private var pressureLabel: UILabel?
@@ -48,7 +49,14 @@ class CurrentWeatherView: UIView {
 
   public func configure(with model: CurrentWeatherViewModel) {
     self.currentDateLabel.text = model.date
-    self.weatherIcon.image = model.weatherIcon
+    if let weatherIcon = model.weatherIcon {
+      self.weatherIcon.image = weatherIcon
+      self.activityIndicatorView.isHidden = true
+      self.activityIndicatorView.stopAnimating()
+    } else {
+      self.activityIndicatorView.isHidden = false
+      self.activityIndicatorView.startAnimating()
+    }
     self.currentTemperatureLabel.text = "\(model.temp)\u{00B0}C"
     self.weatherDescriptionLabel?.text = model.weatherDescription
     self.feelsLikeLabel?.text = "Ощущается как \(model.feelsLike)\u{00B0}C"
@@ -56,12 +64,22 @@ class CurrentWeatherView: UIView {
     self.humidityLabel?.text = "Влажность воздуха \(model.humidity)%"
     self.windSpeedLabel?.text = "Скорость ветра \(model.windSpeed) м/с"
     self.uvIndexLabel?.text = "УФ-индекс \(model.uvIndex)"
-    self.weatherDetailsView.setNeedsLayout()
+    self.contentView.setNeedsLayout()
+    self.contentView.layoutIfNeeded()
   }
   
   private func configureUI() {
     self.currentDateLabel.text = nil
     self.currentTemperatureLabel.text = nil
+    self.weatherIcon.addSubview(self.activityIndicatorView)
+    self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      self.activityIndicatorView.centerXAnchor.constraint(
+        equalTo: self.weatherIcon.centerXAnchor),
+      self.activityIndicatorView.centerYAnchor.constraint(
+        equalTo: self.weatherIcon.centerYAnchor)
+    ])
+    
     self.configureWeatherDescriptionLabel()
     self.configureFeelsLikeLabel()
     self.configurePressureLabel()

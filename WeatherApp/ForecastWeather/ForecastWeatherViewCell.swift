@@ -17,6 +17,8 @@ class ForecastWeatherViewCell: UICollectionViewCell {
   @IBOutlet weak var dayTemperatureLabel: UILabel!
   @IBOutlet weak var nightTemperatureLabel: UILabel!
   
+  private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
+  
   override func awakeFromNib() {
     super.awakeFromNib()
     self.layer.cornerRadius = 20
@@ -24,13 +26,28 @@ class ForecastWeatherViewCell: UICollectionViewCell {
     self.contentView.backgroundColor = .systemGray2
     self.contentView.addSubview(self.dateLabel)
     self.contentView.addSubview(self.weatherIconView)
+    self.weatherIconView.addSubview(self.activityIndicatorView)
+    self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      self.activityIndicatorView.centerXAnchor.constraint(
+        equalTo: self.weatherIconView.centerXAnchor),
+      self.activityIndicatorView.centerYAnchor.constraint(
+        equalTo: self.weatherIconView.centerYAnchor)
+    ])
     self.contentView.addSubview(self.dayTemperatureLabel)
     self.contentView.addSubview(nightTemperatureLabel)
   }
   
   public func configure(with model: ForecastWeatherViewModel) {
     self.dateLabel.text = model.date
-    self.weatherIconView.image = model.weatherIcon
+    if let weatherIcon = model.weatherIcon {
+      self.weatherIconView.image = weatherIcon
+      self.activityIndicatorView.isHidden = true
+      self.activityIndicatorView.stopAnimating()
+    } else {
+      self.activityIndicatorView.isHidden = false
+      self.activityIndicatorView.startAnimating()
+    }
     self.dayTemperatureLabel.text = "\(model.tempDay)\u{00B0}C"
     self.nightTemperatureLabel.text = "\(model.tempNight)\u{00B0}C"
   }
