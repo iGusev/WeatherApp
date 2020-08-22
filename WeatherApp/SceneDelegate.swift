@@ -19,7 +19,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     self.window?.windowScene = windowScene
 //    let builder = Builder()
 //    self.window?.rootViewController = builder.build()
-    let presenter = WeatherPresenter(networkService: NetworkService(), databaseService: databaseService, locationService: LocationService())
+    let networkService = NetworkService()
+    let presenter = WeatherPresenter(networkService: networkService, databaseService: databaseService, locationService: LocationService(), iconService: IconService(networkService: networkService))
     let vc = WeatherViewController(presenter: presenter)
     self.window?.rootViewController = vc
     presenter.viewController = vc

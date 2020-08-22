@@ -17,5 +17,6 @@ struct CurrentWeatherViewModel {
   public let windSpeed: String
   public let date: String
   public let weatherDescription: String
-  public let weatherIcon: UIImage?
+  public let weatherIconURL: String
+  public var weatherIcon: UIImage?
 }

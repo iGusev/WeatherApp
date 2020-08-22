@@ -19,8 +19,9 @@ class ForecastWeatherViewCell: UICollectionViewCell {
   
   override func awakeFromNib() {
     super.awakeFromNib()
-    self.layer.cornerRadius = 15
+    self.layer.cornerRadius = 20
     self.layer.masksToBounds = true
+    self.contentView.backgroundColor = .systemGray2
     self.contentView.addSubview(self.dateLabel)
     self.contentView.addSubview(self.weatherIconView)
     self.contentView.addSubview(self.dayTemperatureLabel)

@@ -12,5 +12,6 @@ struct ForecastWeatherViewModel {
   public let tempDay: String
   public let tempNight: String
   public let date: String
-  public let weatherIcon: UIImage?
+  public let weatherIconURL: String
+  public var weatherIcon: UIImage?
 }

@@ -26,6 +26,7 @@ class ForecastWeatherCollectionView: UICollectionView {
   private func configureUI() {
     let collectionViewLayout = LeftCollectionViewLayout()
     collectionViewLayout.minimumLineSpacing = self.itemMargin
+    collectionViewLayout.minimumInteritemSpacing = 1000
     collectionViewLayout.sectionInset = .init(top: 0,
                                               left: self.itemMargin,
                                               bottom: 0,

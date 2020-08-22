@@ -28,18 +28,18 @@
                     <nil key="highlightedColor"/>
                 </label>
                 <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" translatesAutoresizingMaskIntoConstraints="NO" id="Y9f-Bb-016">
-                    <rect key="frame" x="157" y="138.5" width="100" height="100"/>
+                    <rect key="frame" x="167" y="138.5" width="80" height="80"/>
                     <color key="backgroundColor" systemColor="systemGray3Color" red="0.78039215689999997" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <constraints>
-                        <constraint firstAttribute="height" constant="100" id="6Yn-P1-93d"/>
+                        <constraint firstAttribute="height" constant="80" id="6Yn-P1-93d"/>
                         <constraint firstAttribute="width" secondItem="Y9f-Bb-016" secondAttribute="height" multiplier="1:1" id="xdC-Sp-Roa"/>
                     </constraints>
                 </imageView>
                 <stackView opaque="NO" contentMode="scaleToFill" axis="vertical" distribution="fillEqually" alignment="center" spacing="10" translatesAutoresizingMaskIntoConstraints="NO" id="hrk-zA-AjL">
-                    <rect key="frame" x="20" y="305" width="374" height="175"/>
+                    <rect key="frame" x="20" y="285" width="374" height="195"/>
                 </stackView>
                 <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Temperature" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="dGV-cN-fvr">
-                    <rect key="frame" x="147.5" y="258.5" width="119.5" height="26.5"/>
+                    <rect key="frame" x="147.5" y="238.5" width="119.5" height="26.5"/>
                     <color key="backgroundColor" systemColor="systemGray3Color" red="0.78039215689999997" green="0.78039215689999997" blue="0.80000000000000004" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                     <fontDescription key="fontDescription" type="system" pointSize="22"/>
                     <nil key="textColor"/>

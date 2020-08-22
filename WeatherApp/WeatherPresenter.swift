@@ -6,12 +6,12 @@
 //  Copyright © 2020 Anastasia Romanova. All rights reserved.
 //
 
-import Foundation
+import UIKit
 
 protocol WeatherPresenterProtocol {
   var currentWeatherModel: CurrentWeatherViewModel? {get set}
   var forecastWeatherModels: [ForecastWeatherViewModel] {get set}
-//  var error: Error? {get set}
+  var error: Error? {get set}
 
   func loadData()
   func loadData(for location: String)
@@ -20,11 +20,14 @@ protocol WeatherPresenterProtocol {
 final class WeatherPresenter: WeatherPresenterProtocol {
   var currentWeatherModel: CurrentWeatherViewModel?
   var forecastWeatherModels: [ForecastWeatherViewModel] = []
+  var error: Error?
+  
   weak var viewController: WeatherViewController?
   
   private let networkService: NetworkServiceProtocol
   private let databaseService: DatabaseServiceProtocol
   private let locationService: LocationServiceProtocol
+  private let iconService: IconServiceProtocol
   
   private var currentWeather: CurrentWeather?
   private var forecastWeathers: [ForecastWeather] = []
@@ -40,10 +43,12 @@ final class WeatherPresenter: WeatherPresenterProtocol {
   // MARK: - Init
   init(networkService: NetworkServiceProtocol,
        databaseService: DatabaseServiceProtocol,
-       locationService: LocationServiceProtocol) {
+       locationService: LocationServiceProtocol,
+       iconService: IconServiceProtocol) {
     self.networkService = networkService
     self.databaseService = databaseService
     self.locationService = locationService
+    self.iconService = iconService
     self.locationService.delegate = self
   }
   
@@ -60,6 +65,7 @@ final class WeatherPresenter: WeatherPresenterProtocol {
       windSpeed: String(weatherModel.windSpeed),
       date: formattedDate,
       weatherDescription: weatherModel.weatherDescription ?? "",
+      weatherIconURL: weatherModel.weatherIcon ?? "",
       weatherIcon: nil)
   }
   
@@ -71,6 +77,7 @@ final class WeatherPresenter: WeatherPresenterProtocol {
         tempDay: String(format: "%.0f", weather.tempDay.rounded()),
         tempNight: String(format: "%.0f", weather.tempNight.rounded()),
         date: formattedDate,
+        weatherIconURL: weather.weatherIcon ?? "",
         weatherIcon: nil)
       self.forecastWeatherModels.append(forecastWeatherModel)
     }
@@ -87,31 +94,34 @@ final class WeatherPresenter: WeatherPresenterProtocol {
     
   }
   
-  private func loadDataFor(latitude: Double, longitude: Double, completion: @escaping (() -> Void)) {
-    self.networkService.getWeather(latitude: latitude, longitude: longitude) { result in
+  private func loadDataFor(latitude: Double,
+                           longitude: Double,
+                           completion: @escaping (() -> Void)) {
+    
+    self.networkService.getWeather(latitude: latitude, longitude: longitude)
+    { [weak self] result in
       switch result {
       case .success(let json):
         guard let weather: [String : Any] = json,
               let forecasts: [[String : Any]] = weather["daily"] as? [[String : Any]]
           else {
-            print(FetchingError.responseNotValid)
+            self?.error = FetchingError.responseNotValid
             return
           }
         
-        
-        guard let coreDataStack = self.databaseService as? CoreDataStack else {return}
+        guard let coreDataStack = self?.databaseService as? CoreDataStack else {return}
         let privateContext = coreDataStack.makePrivateContext()
         let mainContext = coreDataStack.mainContext
         
         privateContext.perform {
-          self.databaseService.deleteOldWeatherData()
+          self?.databaseService.deleteOldWeatherData()
           DispatchQueue.global().async {
             for item in forecasts {
               guard let forecastWeather = ForecastWeather(json: item, in: privateContext)
                 else {return}
-              self.forecastWeathers.append(forecastWeather)
+              self?.forecastWeathers.append(forecastWeather)
             }
-            self.currentWeather = CurrentWeather(json: weather, in: privateContext)
+            self?.currentWeather = CurrentWeather(json: weather, in: privateContext)
             
             DispatchQueue.main.async {
               guard privateContext.hasChanges else {return}
@@ -135,11 +145,65 @@ final class WeatherPresenter: WeatherPresenterProtocol {
         }
         
       case .failure(let error):
-        print(error)
+        self?.error = error
       }
     }
   }
-
+  
+  private func loadIcons() {
+    guard let currentWeatherModel = self.currentWeatherModel else {return}
+    
+    let iconQueue = DispatchQueue(label: "iconQueue",
+                                  qos: .userInitiated,
+                                  attributes: .concurrent)
+    let dispatchGroup: DispatchGroup = DispatchGroup()
+    
+    iconQueue.async() { [weak self] in
+      dispatchGroup.enter()
+      self?.iconService.icon(byUrl: currentWeatherModel.weatherIconURL) { [weak self] icon, error in
+        if let error = error {
+          self?.error = error
+        } else if let icon = icon {
+          self?.currentWeatherModel?.weatherIcon = icon
+        }
+      }
+      
+    }
+    
+//    let currentWeatherIconOperation = BlockOperation {
+//        self.iconService.icon(byUrl: currentWeatherModel.weatherIconURL) { icon, error in
+//        if let error = error {
+//          self.error = error
+//        } else if let icon = icon {
+//          self.currentWeatherModel?.weatherIcon = icon
+//        }
+//      }
+//    }
+//    iconQueue.addOperation(currentWeatherIconOperation)
+//
+//    var forecastWeatherIconOperations: [BlockOperation] = []
+    
+    let forecastWeatherModels = self.forecastWeatherModels
+    
+    for (index, forecastModel) in forecastWeatherModels.enumerated() {
+//      let forecastWeatherIconOperation = BlockOperation {
+          self.iconService.icon(byUrl: forecastModel.weatherIconURL) { [weak self] icon, error in
+          if let error = error {
+            self?.error = error
+          } else if let icon = icon {
+            self?.forecastWeatherModels[index].weatherIcon = icon
+            
+          }
+        }
+//      }
+//      forecastWeatherIconOperations.append(forecastWeatherIconOperation)
+//      iconQueue.addOperation(forecastWeatherIconOperation)
+    }
+    dispatchGroup.leave()
+    dispatchGroup.notify(queue: .main) {
+      self.viewController?.updateView()
+    }
+  }
 }
 
 
@@ -151,7 +215,8 @@ extension WeatherPresenter: LocationDelegate {
                        longitude: location.coordinate.longitude) {
         self.currentWeatherViewModel()
         self.forecastWeatherViewModels()
-        self.viewController?.updateView()
+        self.loadIcons()
+//        self.viewController?.updateView()
         self.isLoading = false
       }
     } else {

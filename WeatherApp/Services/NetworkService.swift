@@ -21,13 +21,14 @@ extension FetchingError: LocalizedError {
   }
 }
 
-
 protocol NetworkServiceProtocol {
   func getWeather(latitude: Double,
                   longitude: Double,
                   completion: @escaping (Result<[String: Any]?,Error>) -> Void)
   
   func getCities(completion: @escaping (Result<[[String: Any]]?,Error>) -> Void)
+  
+  func loadIcon(byUrl url: String, completion: @escaping (Result<Data?,Error>) -> Void)
 }
 
 final class NetworkService: NetworkServiceProtocol {
@@ -53,27 +54,26 @@ final class NetworkService: NetworkServiceProtocol {
     let session = URLSession(configuration: .default)
     guard let url = urlComponents?.url else {return}
 
-    let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
-      DispatchQueue.global().async {
-        if let error = error {
-          completion(.failure(error))
-        } else if
-          let data = data,
-          let response = response as? HTTPURLResponse,
-          response.statusCode == 200 {
-          do {
-            let responseObject = (try JSONSerialization.jsonObject(
-              with: data,
-              options: .allowFragments)) as? [String: Any]
-            completion(.success(responseObject))
-          } catch {
+    DispatchQueue.global().async {
+      let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
+          if let error = error {
             completion(.failure(error))
+          } else if
+            let data = data,
+            let response = response as? HTTPURLResponse,
+            response.statusCode == 200 {
+            do {
+              let responseObject = (try JSONSerialization.jsonObject(
+                with: data,
+                options: .allowFragments)) as? [String: Any]
+              completion(.success(responseObject))
+            } catch {
+              completion(.failure(error))
+            }
           }
         }
-      }
+      dataTask?.resume()
     }
-    
-    dataTask?.resume()
   }
   
   
@@ -81,28 +81,52 @@ final class NetworkService: NetworkServiceProtocol {
     guard let url: URL = URL(string: "http://bulk.openweathermap.org/sample/city.list.json.gz") else {return}
     
     let session = URLSession(configuration: .default)
-
-    let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
-      DispatchQueue.global().async {
-        if let error = error {
-          completion(.failure(error))
-        } else if
-          let data = data,
-          let response = response as? HTTPURLResponse,
-          response.statusCode == 200 {
-          do {
-            let nsData: NSData = NSData(data: data)
-            guard let decompressedData = nsData.gunzipped() else {return}
-            let responseObject = (try JSONSerialization.jsonObject(
-              with: decompressedData,
-              options: .allowFragments)) as? [[String: Any]]
-            completion(.success(responseObject))
-          } catch {
+    
+    DispatchQueue.global().async {
+      let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
+        
+          if let error = error {
             completion(.failure(error))
+          } else if
+            let data = data,
+            let response = response as? HTTPURLResponse,
+            response.statusCode == 200 {
+            do {
+              let nsData: NSData = NSData(data: data)
+              guard let decompressedData = nsData.gunzipped() else {return}
+              let responseObject = (try JSONSerialization.jsonObject(
+                with: decompressedData,
+                options: .allowFragments)) as? [[String: Any]]
+              completion(.success(responseObject))
+            } catch {
+              completion(.failure(error))
+            }
           }
         }
-      }
+      
+      dataTask?.resume()
     }
-    dataTask?.resume()
+  }
+  
+  func loadIcon(byUrl url: String, completion: @escaping (Result<Data?,Error>) -> Void) {
+    let baseURL: String = "http://openweathermap.org/img/wn/"
+    let postfix: String = "@2x.png"
+    
+    guard let url: URL = URL(string: baseURL + url + postfix) else {return}
+    let session = URLSession(configuration: .default)
+    
+    DispatchQueue.global().async {
+      let dataTask: URLSessionDataTask? = session.dataTask(with: url) { data, response, error in
+          if let error = error {
+            completion(.failure(error))
+          } else if
+            let data = data,
+            let response = response as? HTTPURLResponse,
+            response.statusCode == 200 {
+            completion(.success(data))
+          }
+        }
+      dataTask?.resume()
+    }
   }
 }
