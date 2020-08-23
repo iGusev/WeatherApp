@@ -14,7 +14,7 @@ protocol WeatherPresenterProtocol {
   var error: Error? {get set}
 
   func loadData()
-  func loadData(for location: String)
+  func loadData(for city: City)
 }
 
 final class WeatherPresenter: WeatherPresenterProtocol {
@@ -90,14 +90,23 @@ final class WeatherPresenter: WeatherPresenterProtocol {
     }
   }
   
-  func loadData(for location: String) {
-    
+  func loadData(for city: City) {
+    guard !self.isLoading else {return}
+    self.loadDataFor(latitude: city.latitude,
+                     longitude: city.longitude) {
+      self.currentWeatherViewModel()
+      self.forecastWeatherViewModels()
+      self.loadIcons()
+      DispatchQueue.main.async {
+         self.viewController?.updateView()
+      }
+      self.isLoading = false
+    }
   }
   
   private func loadDataFor(latitude: Double,
                            longitude: Double,
                            completion: @escaping (() -> Void)) {
-    
     self.networkService.getWeather(latitude: latitude, longitude: longitude)
     { [weak self] result in
       switch result {
@@ -158,7 +167,6 @@ final class WeatherPresenter: WeatherPresenterProtocol {
                                   attributes: .concurrent)
     let dispatchGroup: DispatchGroup = DispatchGroup()
     
-//    dispatchGroup.enter()
     iconQueue.async() { [weak self] in
       dispatchGroup.enter()
       self?.iconService.icon(byUrl: currentWeatherModel.weatherIconURL) { [weak self] icon, error in
@@ -169,43 +177,23 @@ final class WeatherPresenter: WeatherPresenterProtocol {
           dispatchGroup.leave()
         }
       }
-      
-//    }
-    
-//    let currentWeatherIconOperation = BlockOperation {
-//        self.iconService.icon(byUrl: currentWeatherModel.weatherIconURL) { icon, error in
-//        if let error = error {
-//          self.error = error
-//        } else if let icon = icon {
-//          self.currentWeatherModel?.weatherIcon = icon
-//        }
-//      }
-//    }
-//    iconQueue.addOperation(currentWeatherIconOperation)
-//
-//    var forecastWeatherIconOperations: [BlockOperation] = []
-      
       guard let forecastWeatherModels = self?.forecastWeatherModels else {return}
     
     for (index, forecastModel) in forecastWeatherModels.enumerated() {
-//      let forecastWeatherIconOperation = BlockOperation {
       dispatchGroup.enter()
-          self?.iconService.icon(byUrl: forecastModel.weatherIconURL) { [weak self] icon, error in
-          if let error = error {
-            self?.error = error
-          } else if let icon = icon {
-            self?.forecastWeatherModels[index].weatherIcon = icon
-            
-          }
-            dispatchGroup.leave()
+      self?.iconService.icon(byUrl: forecastModel.weatherIconURL) { [weak self] icon, error in
+        if let error = error {
+          self?.error = error
+        } else if let icon = icon {
+          self?.forecastWeatherModels[index].weatherIcon = icon
+          
         }
-//      }
-//      forecastWeatherIconOperations.append(forecastWeatherIconOperation)
-//      iconQueue.addOperation(forecastWeatherIconOperation)
+          dispatchGroup.leave()
+      }
     }
     dispatchGroup.notify(queue: .main) {
-         self?.viewController?.updateView()
-       }
+      self?.viewController?.updateView()
+    }
     
     }
    
