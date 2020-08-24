@@ -12,6 +12,19 @@ protocol DatabaseServiceProtocol {
   func save()
   func deleteOldWeatherData()
   func deleteCitiesData()
-  func fetchRequest<T>() -> [T]?
+  func fetchObjects<T>(with type: T.Type, completion: @escaping (([T]) -> Void))
+}
+
+enum DatabaseError: Error {
+  case invalidInitialization
+}
+
+extension DatabaseError: LocalizedError {
+  public var errorDescription: String? {
+    switch self {
+    case .invalidInitialization:
+      return "Не удалось инициализировать базу данных"
+    }
+  }
 }
 

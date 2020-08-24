@@ -23,6 +23,18 @@ extension LocationError: LocalizedError {
   }
 }
 
+extension CLLocationCoordinate2D: Equatable {
+  
+  public static func == (lhs: Self, rhs: Self) -> Bool {
+    if lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude {
+      return true
+    } else {
+      return false
+    }
+  }
+  
+}
+
 
 protocol LocationServiceProtocol: NSObject {
   var location: CLLocation? {get set}
@@ -49,11 +61,12 @@ final class LocationService: NSObject, LocationServiceProtocol {
   
   /// Запрос местоположения
   public func requestLocation() {
-//    DispatchQueue.main.async {
-      if CLLocationManager.authorizationStatus() == .authorizedWhenInUse {
-        self.locationManager.requestLocation()
-      }
-//    }
+    if CLLocationManager.authorizationStatus() == .authorizedWhenInUse ||
+      CLLocationManager.authorizationStatus() == .authorizedAlways {
+      self.locationManager.requestLocation()
+    } else {
+      self.delegate?.didReceiveLocation()
+    }
   }
   
   private func configureLocationManager() {
@@ -71,6 +84,7 @@ extension LocationService: CLLocationManagerDelegate {
   ///   - manager: CLLocation менеджер
   ///   - locations: список местоположений в хронологическом порядке
   public func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    guard locations.last?.coordinate != self.location?.coordinate else {return}
     self.location = locations.last
     self.delegate?.didReceiveLocation()
   }
@@ -82,6 +96,7 @@ extension LocationService: CLLocationManagerDelegate {
   ///   - error: ошибка
   public func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     print(error)
+    self.location = nil
     self.delegate?.didReceiveLocation()
   }
 }

@@ -52,6 +52,14 @@ class ForecastWeatherViewCell: UICollectionViewCell {
     self.nightTemperatureLabel.text = "\(model.tempNight)\u{00B0}C"
   }
   
+  public func configureWithEmptyData(today: String) {
+    self.dateLabel.text = today
+    self.activityIndicatorView.isHidden = false
+    self.activityIndicatorView.startAnimating()
+    self.dayTemperatureLabel.text = "Днем"
+    self.nightTemperatureLabel.text = "Ночью"
+  }
+  
   override func prepareForReuse() {
     self.dateLabel.text = nil
     self.weatherIconView.image = nil

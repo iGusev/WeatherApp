@@ -10,9 +10,10 @@ import UIKit
 import CoreData
 
 protocol CitiesPresenterProtocol {
-  var error: Error? {get set}
 
   func loadCities()
+  
+  func refreshCitiesList()
   
   func searchCities(with query: String)
   
@@ -21,50 +22,72 @@ protocol CitiesPresenterProtocol {
   func tableView(_ tableView: UITableView,
                  reuseIdentifier: String,
                  cellForRowAt indexPath: IndexPath) -> UITableViewCell
+  
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
 
 }
 
 final class CitiesPresenter: CitiesPresenterProtocol {
   
+  private let router: Router
+  
   private let networkService: NetworkServiceProtocol
   private let databaseService: DatabaseServiceProtocol
   private var fetchResultsController: NSFetchedResultsController<City>?
   
-  var error: Error?
+  private var search: DispatchWorkItem = DispatchWorkItem(block: {})
+  private var isLoading: Bool = false
   
   weak var viewController: CitiesTableViewController?
   
   // MARK: - Init
-  init(networkService: NetworkServiceProtocol,
+  init(router: Router,
+       networkService: NetworkServiceProtocol,
        databaseService: DatabaseServiceProtocol) {
     self.networkService = networkService
     self.databaseService = databaseService
+    self.router = router
   }
   
   func loadCities() {
-    self.performFetch()
-    guard let fetchController = self.fetchResultsController,
-          fetchController.fetchedObjects == nil ||
-          fetchController.fetchedObjects!.count == 0 else {return}
+    self.performFetch() {
+      guard self.fetchResultsController?.fetchedObjects == nil ||
+            self.fetchResultsController?.fetchedObjects!.count == 0 else {return}
+      self.loadCitiesFromNetwork {
+        self.viewController?.showActivityIndicator(false)
+        self.viewController?.showDownloadAlert(true)
+        self.performFetch()
+        self.isLoading = false
+      }
+    }
+  }
+  
+  func refreshCitiesList() {
     self.loadCitiesFromNetwork {
       self.performFetch()
+      self.isLoading = false
     }
   }
   
   func searchCities(with query: String) {
-    guard query.count > 0 else {
-      self.performFetch()
-      return
+    self.search.cancel()
+    self.search = DispatchWorkItem() {
+      self.performFetch(with: query)
     }
-    self.performFetch(with: query)
+    DispatchQueue.global().asyncAfter(wallDeadline: .now() + 0.5,
+                                      execute: self.search)
   }
   
   private func loadCitiesFromNetwork(completion: @escaping (() -> Void)) {
+    guard !self.isLoading else {return}
+    self.isLoading = true
     self.networkService.getCities { result in
       switch result {
       case .success(let json):
         guard let cities: [[String : Any]] = json else {
-          print(FetchingError.responseNotValid)
+          self.viewController?.showAlert(error: FetchingError.responseNotValid)
+          self.viewController?.showActivityIndicator(false)
+          self.viewController?.showDownloadAlert(false)
           return
         }
         
@@ -86,6 +109,7 @@ final class CitiesPresenter: CitiesPresenterProtocol {
                 mainContext.performAndWait {
                   do {
                     try mainContext.save()
+                    print("Changes saved to CoreData")
                     completion()
                   } catch {
                   let nserror = error as NSError
@@ -101,37 +125,54 @@ final class CitiesPresenter: CitiesPresenterProtocol {
         }
         
       case .failure(let error):
-        self.error = error
+        self.viewController?.showAlert(error: error)
+        self.viewController?.showActivityIndicator(false)
+        self.viewController?.showDownloadAlert(false)
+        self.isLoading = false
       }
     }
   }
   
-  private func performFetch(with query: String? = nil) {
-    guard let coreDataStack = self.databaseService as? CoreDataStack else {return}
-    let privateContext = coreDataStack.makePrivateContext()
-    
-    let fetchRequest = NSFetchRequest<City>(entityName: String(describing: City.self))
-    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-    fetchRequest.predicate = NSPredicate(format: "name != %@", "-")
-    
-    if let query = query {
-      fetchRequest.predicate = NSPredicate(format: "name contains[cd] %@", query)
-    }
-    
-    let fetchController = NSFetchedResultsController(
-      fetchRequest: fetchRequest,
-      managedObjectContext: privateContext,
-      sectionNameKeyPath: nil,
-      cacheName: nil)
-    self.fetchResultsController = fetchController
-    
-    do {
-      try fetchController.performFetch()
-      DispatchQueue.main.async {
-        self.viewController?.reloadData()
+  private func performFetch(with query: String? = nil,
+                            completion: (() -> Void)? = nil) {
+    DispatchQueue.global().async {
+      guard let coreDataStack = self.databaseService as? CoreDataStack else {return}
+      let privateContext = coreDataStack.makePrivateContext()
+      
+      let fetchRequest = NSFetchRequest<City>(entityName: String(describing: City.self))
+      fetchRequest.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+      fetchRequest.predicate = NSPredicate(format: "name != %@", "-")
+      
+      if let query = query, query.count > 0 {
+        fetchRequest.predicate = NSPredicate(format: "name contains[cd] %@", query)
       }
-    } catch {
-      self.error = error
+      
+      let fetchController = NSFetchedResultsController(
+        fetchRequest: fetchRequest,
+        managedObjectContext: privateContext,
+        sectionNameKeyPath: nil,
+        cacheName: nil)
+      self.fetchResultsController = fetchController
+      
+      do {
+        DispatchQueue.main.async {
+          self.viewController?.showDownloadAlert(false)
+          self.viewController?.showActivityIndicator(true)
+        }
+        try fetchController.performFetch()
+        let animated = (fetchController.fetchedObjects!.count == 0 && query == nil)
+        DispatchQueue.main.async {
+          self.viewController?.reloadData(animated: animated)
+        }
+        if let completion = completion {
+          completion()
+        }
+      } catch {
+        self.viewController?.showAlert(error: error)
+        self.viewController?.showActivityIndicator(false)
+        self.viewController?.showDownloadAlert(false)
+        self.isLoading = false
+      }
     }
   }
   
@@ -153,5 +194,13 @@ final class CitiesPresenter: CitiesPresenterProtocol {
     cell.textLabel?.text = object.name
     cell.detailTextLabel?.text = object.country
     return cell
+  }
+  
+  // MARK: - Table view delegate
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    tableView.cellForRow(at: indexPath)?.isSelected = false
+    guard let city = self.fetchResultsController?.object(at: indexPath) else {return}
+    self.router.returnToWeatherForecast(from: self.viewController,
+                                        for: city)
   }
 }

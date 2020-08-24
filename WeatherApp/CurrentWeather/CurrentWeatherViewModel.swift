@@ -19,4 +19,5 @@ struct CurrentWeatherViewModel {
   public let weatherDescription: String
   public let weatherIconURL: String
   public var weatherIcon: UIImage?
+  public var city: String? = nil
 }

@@ -12,10 +12,9 @@ class WeatherViewController: UIViewController {
 
   private var currentWeatherView: CurrentWeatherView?
   private var forecastWeatherView: ForecastWeatherCollectionView?
+  private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
   
   private let itemMargin: CGFloat = 20
-  
-  private var isUpdating: Bool = false
   
   private var presenter: WeatherPresenter
 
@@ -38,7 +37,10 @@ class WeatherViewController: UIViewController {
   private func configureUI() {
     self.view.backgroundColor = .systemGray3
     
-    self.currentWeatherView = CurrentWeatherView()
+    self.currentWeatherView = CurrentWeatherView(frame: .zero,
+                                                 onButtonTap: {
+                                                  self.presenter.locationButtonOnTap()
+    })
     self.forecastWeatherView = ForecastWeatherCollectionView()
     guard let currentWeatherView = self.currentWeatherView,
           let forecastWeatherView = self.forecastWeatherView else {return}
@@ -64,17 +66,53 @@ class WeatherViewController: UIViewController {
     
     forecastWeatherView.delegate = self
     forecastWeatherView.dataSource = self
+    
+    self.view.addSubview(self.activityIndicatorView)
+    self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+    NSLayoutConstraint.activate([
+      self.activityIndicatorView.centerXAnchor.constraint(
+        equalTo: self.view.centerXAnchor),
+      self.activityIndicatorView.centerYAnchor.constraint(
+        equalTo: self.view.centerYAnchor)
+    ])
+    self.activityIndicatorView.isHidden = true
   }
   
   public func updateView() {
-//    guard !self.isUpdating else {return}
-    guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
-    self.isUpdating = true
-    self.currentWeatherView?.configure(with: currentWeatherViewModel)
-    self.forecastWeatherView?.reloadData()
-    self.isUpdating = false
-    self.view.setNeedsLayout()
-    self.view.layoutIfNeeded()
+    DispatchQueue.main.async {
+      guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
+      self.currentWeatherView?.configure(with: currentWeatherViewModel)
+      self.forecastWeatherView?.reloadData()
+      self.view.setNeedsLayout()
+      self.view.layoutIfNeeded()
+      self.showActivityIndicator(false)
+    }
+  }
+  
+  public func updateViewWithEmptyData(today: String) {
+    DispatchQueue.main.async {
+      self.currentWeatherView?.configureWithEmptyData(today: today)
+      self.forecastWeatherView?.reloadData()
+      self.view.setNeedsLayout()
+      self.view.layoutIfNeeded()
+      self.showActivityIndicator(false)
+    }
+  }
+  
+  public func showActivityIndicator(_ isLoading: Bool) {
+    DispatchQueue.main.async {
+      self.activityIndicatorView.isHidden = !isLoading
+      isLoading ? self.activityIndicatorView.startAnimating() : self.activityIndicatorView.stopAnimating()
+    }
+  }
+  
+  public func showNoDataAlert() {
+    DispatchQueue.main.async {
+      let alertVC = UIAlertController(title: "Уведомление", message: "Для загрузки погодных данных выберите местоположение", preferredStyle: .alert)
+      
+      alertVC.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
+      self.present(alertVC, animated: true, completion: nil)
+    }
   }
 
 }
@@ -84,14 +122,18 @@ extension WeatherViewController:
           UICollectionViewDataSource,
           UICollectionViewDelegateFlowLayout {
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    self.presenter.forecastWeatherModels.count
+    return self.presenter.forecastWeatherModels.count > 0 ? self.presenter.forecastWeatherModels.count : 7
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
     let cell = self.forecastWeatherView?.dequeueReusableCell(
       withReuseIdentifier: ForecastWeatherViewCell.cellIdentifier,
       for: indexPath) as! ForecastWeatherViewCell
-    cell.configure(with: self.presenter.forecastWeatherModels[indexPath.item])
+    if self.presenter.forecastWeatherModels.count == 0 {
+      cell.configureWithEmptyData(today: "23.08")
+    } else {
+      cell.configure(with: self.presenter.forecastWeatherModels[indexPath.item])
+    }
     return cell
   }
   

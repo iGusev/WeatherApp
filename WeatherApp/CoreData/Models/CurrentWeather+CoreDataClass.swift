@@ -24,7 +24,7 @@ public class CurrentWeather: NSManagedObject {
           let weather = data["weather"] as? [[String : Any]] else {return}
     self.latitude = json["lat"] as? Double ?? 0
     self.longitude = json["lon"] as? Double ?? 0
-    self.date = Date(timeIntervalSince1970: timeInterval)
+    self.date = NSDate(timeIntervalSince1970: timeInterval)
     self.temp = data["temp"] as? Double ?? 0
     self.feelsLike = data["feels_like"] as? Double ?? 0
     self.pressure = data["pressure"] as? Int16 ?? 0

@@ -22,7 +22,7 @@ public final class ForecastWeather: NSManagedObject {
     guard let timeInterval = json["dt"] as? TimeInterval,
               let temperature = json["temp"] as? [String : Any],
               let weather = json["weather"] as? [[String : Any]] else {return}
-    self.date = Date(timeIntervalSince1970: timeInterval)
+    self.date = NSDate(timeIntervalSince1970: timeInterval)
     self.tempDay = temperature["day"] as? Double ?? 0
     self.tempNight = temperature["night"] as? Double ?? 0
     self.weatherIcon = weather[0]["icon"] as? String ?? ""

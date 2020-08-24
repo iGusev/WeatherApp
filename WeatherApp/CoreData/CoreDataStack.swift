@@ -8,6 +8,20 @@
 
 import CoreData
 
+extension NSManagedObjectContext {
+  
+  func fetchObjects<T>(with type: T.Type) -> [T]? {
+    let request: NSFetchRequest<NSFetchRequestResult>
+    let entityName = String(describing: T.self)
+    request = NSFetchRequest(entityName: entityName)
+
+    let fetchedResult = try? request.execute() as? [T]
+//    let result = (fetchedResult?[0])! as! CurrentWeather
+//    print(result.feelsLike)
+    return fetchedResult
+  }
+}
+
 final class CoreDataStack: DatabaseServiceProtocol {
   
 // MARK: - Core Data stack
@@ -101,11 +115,34 @@ final class CoreDataStack: DatabaseServiceProtocol {
     }
   }
   
-  func fetchRequest<T>() -> [T]? {
-    guard let managedObject = T.self as? NSManagedObject.Type else {return nil}
-    let request = managedObject.fetchRequest()
-    let results = try? self.makePrivateContext().fetch(request) as? [T]
-    return results
+  func fetchObjects<T>(with type: T.Type, completion: @escaping (([T]) -> Void)) {
+    let context = self.makePrivateContext()
+    context.perform {
+      let results = context.fetchObjects(with: T.self)
+//    }
+    
+//    for result in results! {
+//      let weather = result as? CurrentWeather
+//      print(weather?.feelsLike)
+//    }
+    guard let unwrapped = results else {return}
+//    print(unwrapped[0])
+//    let weather = unwrapped[0] as? CurrentWeather
+//    print(weather?.feelsLike)
+    completion(unwrapped)
   }
-  
+//    guard let managedObject = T.self as? NSManagedObject.Type else {return nil}
+//    let request = managedObject.fetchRequest()
+////    let type = managedObject
+////    let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: String(describing: T.self))
+////    let request: NSFetchRequest<managedObject.Type> = NSFetchRequest(entityName: String(describing: T.self))
+//    print(request)
+//    let results = try? self.makePrivateContext().fetch(request) as? [T]
+//    for result in results! {
+//      let weather = result as? CurrentWeather
+//      print(weather?.feelsLike)
+//    }
+//    return results
+  }
+
 }

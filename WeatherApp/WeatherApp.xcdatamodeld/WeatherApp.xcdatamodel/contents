@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="16119" systemVersion="19G73" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
-    <entity name="City" representedClassName=".City" syncable="YES">
+    <entity name="City" representedClassName="City" syncable="YES">
         <attribute name="country" attributeType="String"/>
         <attribute name="id" attributeType="Integer 64" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="latitude" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -8,7 +8,7 @@
         <attribute name="name" attributeType="String"/>
         <attribute name="state" attributeType="String"/>
     </entity>
-    <entity name="CurrentWeather" representedClassName=".CurrentWeather" syncable="YES">
+    <entity name="CurrentWeather" representedClassName="CurrentWeather" syncable="YES">
         <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="feelsLike" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="humidity" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
@@ -21,7 +21,7 @@
         <attribute name="weatherIcon" attributeType="String"/>
         <attribute name="windSpeed" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
     </entity>
-    <entity name="ForecastWeather" representedClassName=".ForecastWeather" syncable="YES">
+    <entity name="ForecastWeather" representedClassName="ForecastWeather" syncable="YES">
         <attribute name="date" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="tempDay" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="tempNight" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>

@@ -10,6 +10,7 @@ import UIKit
 
 class CurrentWeatherView: UIView {
   @IBOutlet var contentView: UIView!
+  @IBOutlet weak var locationButton: UIButton!
   @IBOutlet weak var currentDateLabel: UILabel!
   @IBOutlet weak var weatherIcon: UIImageView!
   @IBOutlet weak var currentTemperatureLabel: UILabel!
@@ -23,7 +24,10 @@ class CurrentWeatherView: UIView {
   private var uvIndexLabel: UILabel?
   private var windSpeedLabel: UILabel?
   
-  override init(frame: CGRect) {
+  private var onButtonTap: (() -> Void)?
+  
+  init(frame: CGRect, onButtonTap: @escaping (() -> Void)) {
+    self.onButtonTap = onButtonTap
     super.init(frame: frame)
     nibSetup()
     configureUI()
@@ -57,6 +61,10 @@ class CurrentWeatherView: UIView {
       self.activityIndicatorView.isHidden = false
       self.activityIndicatorView.startAnimating()
     }
+    if let city = model.city {
+      self.locationButton.setTitle("\(city)", for: .normal)
+    }
+    self.locationButton.isHidden = false
     self.currentTemperatureLabel.text = "\(model.temp)\u{00B0}C"
     self.weatherDescriptionLabel?.text = model.weatherDescription
     self.feelsLikeLabel?.text = "Ощущается как \(model.feelsLike)\u{00B0}C"
@@ -68,7 +76,35 @@ class CurrentWeatherView: UIView {
     self.contentView.layoutIfNeeded()
   }
   
+  public func configureWithEmptyData(today: String) {
+    self.currentDateLabel.text = today
+    self.activityIndicatorView.isHidden = false
+    self.activityIndicatorView.startAnimating()
+    self.locationButton.isHidden = false
+    self.currentTemperatureLabel.text = "Температура"
+    self.weatherDescriptionLabel?.text = "Погодные условия"
+    self.feelsLikeLabel?.text = "Ощущается как ..."
+    self.pressureLabel?.text = "Давление, мм рт. ст."
+    self.humidityLabel?.text = "Влажность воздуха, %"
+    self.windSpeedLabel?.text = "Скорость ветра, м/с"
+    self.uvIndexLabel?.text = "УФ-индекс"
+    self.contentView.setNeedsLayout()
+    self.contentView.layoutIfNeeded()
+  }
+  
+  
+  @IBAction func locationButtonOnTap(_ sender: Any) {
+    guard let action = self.onButtonTap else {return}
+    action()
+  }
+  
   private func configureUI() {
+    self.locationButton.setTitle("Текущее местоположение", for: .normal)
+    self.locationButton.layer.cornerRadius = 10
+    self.locationButton.layer.masksToBounds = true
+    self.locationButton.layer.borderColor = UIColor.systemIndigo.cgColor
+    self.locationButton.layer.borderWidth = 1
+    self.locationButton.isHidden = true
     self.currentDateLabel.text = nil
     self.currentTemperatureLabel.text = nil
     self.weatherIcon.addSubview(self.activityIndicatorView)
@@ -100,6 +136,7 @@ class CurrentWeatherView: UIView {
   private func configureFeelsLikeLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
+    label.textColor = .systemIndigo
     label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
@@ -109,6 +146,7 @@ class CurrentWeatherView: UIView {
   private func configurePressureLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
+    label.textColor = .systemIndigo
     label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
@@ -118,6 +156,7 @@ class CurrentWeatherView: UIView {
   private func configureHumidityLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
+    label.textColor = .systemIndigo
     label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
@@ -127,6 +166,7 @@ class CurrentWeatherView: UIView {
   private func configureWindSpeedLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
+    label.textColor = .systemIndigo
     label.backgroundColor = .systemGray3
 
     self.weatherDetailsView.addArrangedSubview(label)
@@ -136,6 +176,7 @@ class CurrentWeatherView: UIView {
   private func configureUVIndexLabel() {
     let label = UILabel()
     label.font = UIFont.systemFont(ofSize: 18)
+    label.textColor = .systemIndigo
     label.backgroundColor = .systemGray3
       
     self.weatherDetailsView.addArrangedSubview(label)

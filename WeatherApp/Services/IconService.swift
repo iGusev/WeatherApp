@@ -67,19 +67,21 @@ class IconService: IconServiceProtocol {
   
   private func loadIcon(byUrl url: String,
                          completion: @escaping (UIImage?, Error?) -> Void) {
-    self.networkService.loadIcon(byUrl: url) { [weak self] result in
-      switch result {
-      case .success(let data):
-        guard
-          let data = data,
-          let image = UIImage(data: data) else { return }
-        DispatchQueue.main.async {
-            self?.images[url] = image
+    DispatchQueue.global().async {
+      self.networkService.loadIcon(byUrl: url) { [weak self] result in
+        switch result {
+        case .success(let data):
+          guard
+            let data = data,
+            let image = UIImage(data: data) else { return }
+          DispatchQueue.main.async {
+              self?.images[url] = image
+          }
+          self?.saveImageToCache(url: url, image: image)
+          completion(image, nil)
+        case .failure(let error):
+          completion(nil, error)
         }
-        self?.saveImageToCache(url: url, image: image)
-        completion(image, nil)
-      case .failure(let error):
-        completion(nil, error)
       }
     }
   }

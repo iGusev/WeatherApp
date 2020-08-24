@@ -2,7 +2,7 @@
 //  City+CoreDataProperties.swift
 //  WeatherApp
 //
-//  Created by Anastasia Romanova on 20.08.2020.
+//  Created by Anastasia Romanova on 23.08.2020.
 //  Copyright © 2020 Anastasia Romanova. All rights reserved.
 //
 //
