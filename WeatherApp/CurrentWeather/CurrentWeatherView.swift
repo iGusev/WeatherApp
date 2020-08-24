@@ -41,7 +41,10 @@ class CurrentWeatherView: UIView {
   }
   
   private func nibSetup() {
-    Bundle.main.loadNibNamed(String(describing: CurrentWeatherView.self), owner: self, options: nil)
+    let name = String(describing: type(of: self))
+    let nib = UINib(nibName: name, bundle: nil)
+    nib.instantiate(withOwner: self, options: nil)
+    
     self.addSubview(self.contentView)
     self.contentView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([

@@ -9,12 +9,12 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="CurrentWeatherView" customModule="WeatherApp" customModuleProvider="target">
             <connections>
-                <outlet property="contentView" destination="iN0-l3-epB" id="HMS-xt-eDm"/>
-                <outlet property="currentDateLabel" destination="BP7-B6-dWy" id="VkM-1X-SNK"/>
-                <outlet property="currentTemperatureLabel" destination="dGV-cN-fvr" id="PNC-gj-vEo"/>
-                <outlet property="locationButton" destination="kEI-QB-lnS" id="23J-dm-aUw"/>
-                <outlet property="weatherDetailsView" destination="hrk-zA-AjL" id="Vzl-bf-okX"/>
-                <outlet property="weatherIcon" destination="Y9f-Bb-016" id="Eul-PA-rHw"/>
+                <outlet property="contentView" destination="iN0-l3-epB" id="1Zq-bu-Tbm"/>
+                <outlet property="currentDateLabel" destination="BP7-B6-dWy" id="ERO-cb-oCL"/>
+                <outlet property="currentTemperatureLabel" destination="dGV-cN-fvr" id="GRd-WK-gsR"/>
+                <outlet property="locationButton" destination="kEI-QB-lnS" id="kMf-b5-bWD"/>
+                <outlet property="weatherDetailsView" destination="hrk-zA-AjL" id="FcD-v7-nzT"/>
+                <outlet property="weatherIcon" destination="Y9f-Bb-016" id="Ivf-QW-qgO"/>
             </connections>
         </placeholder>
         <placeholder placeholderIdentifier="IBFirstResponder" id="-2" customClass="UIResponder"/>

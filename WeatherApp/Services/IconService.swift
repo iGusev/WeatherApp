@@ -76,11 +76,13 @@ final class IconService: IconServiceProtocol {
       else { return nil }
     
     let lifeTime = Date().timeIntervalSince(modificationDate)
-    
-    guard
-      lifeTime <= self.cacheLifeTime,
-      let image = UIImage(contentsOfFile: fileName) else { return nil }
 
+    guard
+      let fileHandle: FileHandle = FileHandle(forReadingAtPath: fileName),
+      lifeTime <= self.cacheLifeTime,
+      let image = UIImage(data: fileHandle.readDataToEndOfFile()) else { return nil }
+    
+    fileHandle.closeFile()
     DispatchQueue.main.async {
       self.images[url] = image
     }
