@@ -11,19 +11,13 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
   var window: UIWindow?
-  let databaseService: DatabaseServiceProtocol = CoreDataStack()
+  let databaseService: DatabaseServiceProtocol = Builder.databaseService
 
   func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
     guard let windowScene = (scene as? UIWindowScene) else { return }
     self.window = UIWindow(frame: windowScene.coordinateSpace.bounds)
     self.window?.windowScene = windowScene
-//    let builder = Builder()
-//    self.window?.rootViewController = builder.build()
-    let networkService = NetworkService()
-    let presenter = WeatherPresenter(networkService: networkService, databaseService: databaseService, locationService: LocationService(), iconService: IconService(networkService: networkService))
-    let vc = WeatherViewController(presenter: presenter)
-    self.window?.rootViewController = vc
-    presenter.viewController = vc
+    self.window?.rootViewController = Builder.buildWeathers()
     self.window?.makeKeyAndVisible()
   }
 

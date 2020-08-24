@@ -12,6 +12,7 @@ class ForecastWeatherCollectionView: UICollectionView {
   
   private let itemMargin: CGFloat = 20
   
+  //MARK: - Init
   init() {
     let collectionViewLayout = UICollectionViewFlowLayout()
     super.init(frame: .zero, collectionViewLayout: collectionViewLayout)
@@ -23,6 +24,7 @@ class ForecastWeatherCollectionView: UICollectionView {
     self.configureUI()
   }
   
+  //MARK: - UI configuration
   private func configureUI() {
     let collectionViewLayout = LeftCollectionViewLayout()
     collectionViewLayout.minimumLineSpacing = self.itemMargin

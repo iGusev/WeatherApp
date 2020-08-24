@@ -12,28 +12,52 @@ protocol IconServiceProtocol {
   func icon(byUrl url: String, completion: @escaping (UIImage?, Error?) -> Void)
 }
 
-class IconService: IconServiceProtocol {
+final class IconService: IconServiceProtocol {
   
   private let networkService: NetworkServiceProtocol
-  
-  init(networkService: NetworkServiceProtocol) {
-    self.networkService = networkService
-  }
-    
+
+  //30 дней
   private let cacheLifeTime: TimeInterval = 30 * 24 * 60 * 60
+  
   private let pathName: String = {
     let pathName = "images"
     guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return pathName }
     let url = cachesDirectory.appendingPathComponent(pathName, isDirectory: true)
     
     if !FileManager.default.fileExists(atPath: url.path) {
-        try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+      try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
     }
     return pathName
   }()
   
+  private var images = [String: UIImage]()
+  
+  /// Инициализатор
+  /// - Parameter networkService: сервис для загрузки данных из сети
+  init(networkService: NetworkServiceProtocol) {
+    self.networkService = networkService
+  }
+  
+  /// Возвращает изображение из кэша при наличии, при отсутствии изображения в кэше производится загрузка из сети
+  /// - Parameters:
+  ///   - url: URL изображения
+  ///   - completion: блок с изображением или возникшей ощибкой
+  public func icon(byUrl url: String, completion: @escaping (UIImage?, Error?) -> Void) {
+    if let photo = self.images[url] {
+      completion(photo, nil)
+    } else if let photo = self.getImageFromCache(url: url) {
+      completion(photo, nil)
+    } else {
+      self.loadIcon(byUrl: url) { photo, error in
+        completion(photo, error)
+      }
+    }
+  }
+  
   private func getFilePath(url: String) -> String? {
-    guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first else { return nil }
+    guard let cachesDirectory = FileManager.default.urls(for: .cachesDirectory,
+                                                         in: .userDomainMask).first
+      else { return nil }
     let hashName = url.split(separator: "/").last ?? "default"
     return cachesDirectory.appendingPathComponent(self.pathName + "/" + hashName).path
   }
@@ -62,11 +86,9 @@ class IconService: IconServiceProtocol {
     }
     return image
   }
-
-  private var images = [String: UIImage]()
   
   private func loadIcon(byUrl url: String,
-                         completion: @escaping (UIImage?, Error?) -> Void) {
+                        completion: @escaping (UIImage?, Error?) -> Void) {
     DispatchQueue.global().async {
       self.networkService.loadIcon(byUrl: url) { [weak self] result in
         switch result {
@@ -75,25 +97,13 @@ class IconService: IconServiceProtocol {
             let data = data,
             let image = UIImage(data: data) else { return }
           DispatchQueue.main.async {
-              self?.images[url] = image
+            self?.images[url] = image
           }
           self?.saveImageToCache(url: url, image: image)
           completion(image, nil)
         case .failure(let error):
           completion(nil, error)
         }
-      }
-    }
-  }
-
-  func icon(byUrl url: String, completion: @escaping (UIImage?, Error?) -> Void) {
-    if let photo = self.images[url] {
-      completion(photo, nil)
-    } else if let photo = self.getImageFromCache(url: url) {
-      completion(photo, nil)
-    } else {
-      self.loadIcon(byUrl: url) { photo, error in
-        completion(photo, error)
       }
     }
   }

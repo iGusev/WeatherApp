@@ -11,6 +11,8 @@ import UIKit
 class DownloadAlertView: UIView {
   @IBOutlet var contentView: UIView!
   
+  //MARK: - Init
+  
   override init(frame: CGRect) {
      super.init(frame: frame)
      nibSetup()
@@ -24,6 +26,7 @@ class DownloadAlertView: UIView {
    func nibSetup() {
     Bundle.main.loadNibNamed(String(describing: DownloadAlertView.self), owner: self, options: nil)
     self.addSubview(self.contentView)
+    
     self.contentView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
       self.contentView.leadingAnchor.constraint(equalTo: self.leadingAnchor),
@@ -31,6 +34,7 @@ class DownloadAlertView: UIView {
       self.contentView.topAnchor.constraint(equalTo: self.topAnchor),
       self.contentView.bottomAnchor.constraint(equalTo: self.bottomAnchor)
     ])
+    
     self.layer.cornerRadius = 20
     self.layer.masksToBounds = true
     self.contentView.setNeedsLayout()

@@ -22,9 +22,9 @@ class SubtitleTableViewCell: UITableViewCell {
 
 class CitiesTableViewController: UITableViewController {
 
-  private var presenter: CitiesPresenterProtocol
-  
   private let reuseIdentifier = "DefaultCell"
+  
+  private var presenter: CitiesPresenterProtocol
   
   private var searchBar: UISearchBar?
   private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
@@ -40,11 +40,13 @@ class CitiesTableViewController: UITableViewController {
     fatalError("init(coder:) has not been implemented")
   }
   
+  //MARK: - Life cycle
   override func viewDidLoad() {
     super.viewDidLoad()
     self.view.backgroundColor = .systemGray3
     self.tableView.register(SubtitleTableViewCell.self,
                             forCellReuseIdentifier: self.reuseIdentifier)
+    
     let refreshButton = UIBarButtonItem(
       title: "Обновить список городов",
       style: .plain,
@@ -52,6 +54,57 @@ class CitiesTableViewController: UITableViewController {
       action: #selector(self.refreshCitiesList))
     self.navigationItem.rightBarButtonItem = refreshButton
     
+    self.configureSearchBar()
+    self.configureActivityIndicator()
+    self.configureDownloadIndicator()
+    
+    self.presenter.loadCities()
+  }
+  
+  override func viewWillDisappear(_ animated: Bool) {
+    self.navigationController?.navigationBar.isHidden = true
+  }
+  
+  //MARK: - UI update
+  
+  /// Обновление данных таблицы
+   /// - Parameter animated: анимация индикатора загрузки
+   public func reloadData(animated: Bool) {
+     self.showDownloadAlert(false)
+     self.showActivityIndicator(animated)
+     self.tableView.reloadData()
+   }
+   
+   /// Показывает / скрывает индикатор загрузки
+   /// - Parameter isLoading: параметр показа / скрытия индикатора
+   public func showActivityIndicator(_ isLoading: Bool) {
+     DispatchQueue.main.async {
+       guard self.downloadAlertView.isHidden == true else {return}
+       self.navigationController?.navigationBar.isUserInteractionEnabled = !isLoading
+       self.navigationItem.rightBarButtonItem?.isEnabled = !isLoading
+       self.navigationItem.setHidesBackButton(isLoading, animated: false)
+       self.view.isUserInteractionEnabled = !isLoading
+       self.activityIndicatorView.isHidden = !isLoading
+       isLoading ?
+        self.activityIndicatorView.startAnimating() : self.activityIndicatorView.stopAnimating()
+     }
+   }
+   
+   /// Показывает / скрывает индикатор загрузки данных из сети
+   /// - Parameter isLoading: параметр показа / скрытия индикатора
+   public func showDownloadAlert(_ isLoading: Bool) {
+     DispatchQueue.main.async {
+       guard self.activityIndicatorView.isHidden == true else {return}
+       self.navigationController?.navigationBar.isUserInteractionEnabled = !isLoading
+       self.navigationItem.rightBarButtonItem?.isEnabled = !isLoading
+       self.navigationItem.setHidesBackButton(isLoading, animated: false)
+       self.view.isUserInteractionEnabled = !isLoading
+       self.downloadAlertView.isHidden = !isLoading
+     }
+  }
+  
+  //MARK: - UI configuration
+  private func configureSearchBar() {
     self.searchBar = UISearchBar()
     self.searchBar?.placeholder = "Введите название города"
     self.searchBar?.delegate = self
@@ -60,6 +113,9 @@ class CitiesTableViewController: UITableViewController {
     self.searchBar?.searchTextField.backgroundColor = .white
     self.tableView.tableHeaderView = self.searchBar
     self.searchBar?.sizeToFit()
+  }
+  
+  private func configureActivityIndicator() {
     self.view.addSubview(self.downloadAlertView)
     self.downloadAlertView.translatesAutoresizingMaskIntoConstraints = false
     self.downloadAlertView.isHidden = true
@@ -69,6 +125,9 @@ class CitiesTableViewController: UITableViewController {
       self.downloadAlertView.centerYAnchor.constraint(
         equalTo: self.view.centerYAnchor)
     ])
+  }
+  
+  private func configureDownloadIndicator() {
     self.view.addSubview(self.activityIndicatorView)
     self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
@@ -78,11 +137,6 @@ class CitiesTableViewController: UITableViewController {
         equalTo: self.view.centerYAnchor)
     ])
     self.showActivityIndicator(true)
-    self.presenter.loadCities()
-  }
-  
-  override func viewWillDisappear(_ animated: Bool) {
-    self.navigationController?.navigationBar.isHidden = true
   }
   
   @objc
@@ -90,35 +144,6 @@ class CitiesTableViewController: UITableViewController {
     self.showActivityIndicator(false)
     self.showDownloadAlert(true)
     self.presenter.refreshCitiesList()
-  }
-  
-  func reloadData(animated: Bool) {
-    self.showDownloadAlert(false)
-    self.showActivityIndicator(animated)
-    self.tableView.reloadData()
-  }
-  
-  public func showActivityIndicator(_ isLoading: Bool) {
-    DispatchQueue.main.async {
-      guard self.downloadAlertView.isHidden == true else {return}
-      self.navigationController?.navigationBar.isUserInteractionEnabled = !isLoading
-      self.navigationItem.rightBarButtonItem?.isEnabled = !isLoading
-      self.navigationItem.setHidesBackButton(isLoading, animated: false)
-      self.view.isUserInteractionEnabled = !isLoading
-      self.activityIndicatorView.isHidden = !isLoading
-      isLoading ? self.activityIndicatorView.startAnimating() : self.activityIndicatorView.stopAnimating()
-    }
-  }
-  
-  func showDownloadAlert(_ isLoading: Bool) {
-    DispatchQueue.main.async {
-      guard self.activityIndicatorView.isHidden == true else {return}
-      self.navigationController?.navigationBar.isUserInteractionEnabled = !isLoading
-      self.navigationItem.rightBarButtonItem?.isEnabled = !isLoading
-      self.navigationItem.setHidesBackButton(isLoading, animated: false)
-      self.view.isUserInteractionEnabled = !isLoading
-      self.downloadAlertView.isHidden = !isLoading
-    }
   }
 
   // MARK: - Table view data source
@@ -134,14 +159,15 @@ class CitiesTableViewController: UITableViewController {
   }
   
   // MARK: - Table view delegate
-  
   override func tableView(_ tableView: UITableView,
                           didSelectRowAt indexPath: IndexPath) {
     self.presenter.tableView(tableView, didSelectRowAt: indexPath)
   }
 }
 
+//MARK: - UISearchBarDelegate
 extension CitiesTableViewController: UISearchBarDelegate {
+  
   func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
     self.presenter.searchCities(with: "")
     searchBar.showsCancelButton = false

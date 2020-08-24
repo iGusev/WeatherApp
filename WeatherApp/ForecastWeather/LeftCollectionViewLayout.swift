@@ -8,6 +8,7 @@
 
 import UIKit
 
+/// Рассчитывает сдвиг оффсета коллекции для "доводки" левого элемента
 class LeftCollectionViewLayout: UICollectionViewFlowLayout {
   let customOffset: CGFloat = 20
   var recentOffset: CGPoint = .zero
@@ -38,7 +39,8 @@ class LeftCollectionViewLayout: UICollectionViewFlowLayout {
       break
     }
 
-    if proposedContentOffset.x + collectionView.frame.width > collectionView.contentSize.width - self.customOffset {
+    if proposedContentOffset.x + collectionView.frame.width >
+      collectionView.contentSize.width - self.customOffset {
       candidate = visibleAttributes.last
     }
 

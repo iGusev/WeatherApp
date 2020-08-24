@@ -18,11 +18,9 @@ protocol CitiesPresenterProtocol {
   func searchCities(with query: String)
   
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
-  
   func tableView(_ tableView: UITableView,
                  reuseIdentifier: String,
                  cellForRowAt indexPath: IndexPath) -> UITableViewCell
-  
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath)
 
 }
@@ -49,10 +47,14 @@ final class CitiesPresenter: CitiesPresenterProtocol {
     self.router = router
   }
   
-  func loadCities() {
+  //MARK: - Public methods
+  /// Загрузка городов из базы данных, при отсутствии - из сети
+  public func loadCities() {
+    
     self.performFetch() {
       guard self.fetchResultsController?.fetchedObjects == nil ||
             self.fetchResultsController?.fetchedObjects!.count == 0 else {return}
+      
       self.loadCitiesFromNetwork {
         self.viewController?.showActivityIndicator(false)
         self.viewController?.showDownloadAlert(true)
@@ -62,14 +64,17 @@ final class CitiesPresenter: CitiesPresenterProtocol {
     }
   }
   
-  func refreshCitiesList() {
+  /// Обновление списка городов
+  public func refreshCitiesList() {
     self.loadCitiesFromNetwork {
       self.performFetch()
       self.isLoading = false
     }
   }
   
-  func searchCities(with query: String) {
+  /// Поиск по городам
+  /// - Parameter query: запрос
+  public func searchCities(with query: String) {
     self.search.cancel()
     self.search = DispatchWorkItem() {
       self.performFetch(with: query)
@@ -78,12 +83,15 @@ final class CitiesPresenter: CitiesPresenterProtocol {
                                       execute: self.search)
   }
   
+  //MARK: - Data load from network
   private func loadCitiesFromNetwork(completion: @escaping (() -> Void)) {
     guard !self.isLoading else {return}
     self.isLoading = true
     self.networkService.getCities { result in
+      
       switch result {
       case .success(let json):
+        
         guard let cities: [[String : Any]] = json else {
           self.viewController?.showAlert(error: FetchingError.responseNotValid)
           self.viewController?.showActivityIndicator(false)
@@ -133,10 +141,12 @@ final class CitiesPresenter: CitiesPresenterProtocol {
     }
   }
   
+  //MARK: - Data load from database
   private func performFetch(with query: String? = nil,
                             completion: (() -> Void)? = nil) {
     DispatchQueue.global().async {
       guard let coreDataStack = self.databaseService as? CoreDataStack else {return}
+      
       let privateContext = coreDataStack.makePrivateContext()
       
       let fetchRequest = NSFetchRequest<City>(entityName: String(describing: City.self))
@@ -159,14 +169,18 @@ final class CitiesPresenter: CitiesPresenterProtocol {
           self.viewController?.showDownloadAlert(false)
           self.viewController?.showActivityIndicator(true)
         }
+        
         try fetchController.performFetch()
         let animated = (fetchController.fetchedObjects!.count == 0 && query == nil)
+        
         DispatchQueue.main.async {
           self.viewController?.reloadData(animated: animated)
         }
+        
         if let completion = completion {
           completion()
         }
+        
       } catch {
         self.viewController?.showAlert(error: error)
         self.viewController?.showActivityIndicator(false)
@@ -186,6 +200,7 @@ final class CitiesPresenter: CitiesPresenterProtocol {
   func tableView(_ tableView: UITableView,
                  reuseIdentifier: String,
                  cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    
     let cell = tableView.dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath)
     guard let object = self.fetchResultsController?.object(at: indexPath) else {
          fatalError("Attempt to configure cell without a managed object")

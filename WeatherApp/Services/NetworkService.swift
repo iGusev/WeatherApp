@@ -8,19 +8,6 @@
 
 import Foundation
 
-enum FetchingError: Error {
-  case responseNotValid
-}
-
-extension FetchingError: LocalizedError {
-  public var errorDescription: String? {
-    switch self {
-    case .responseNotValid:
-      return "Ответ сервера не поддерживается"
-    }
-  }
-}
-
 protocol NetworkServiceProtocol {
   func getWeather(latitude: Double,
                   longitude: Double,
@@ -34,9 +21,16 @@ protocol NetworkServiceProtocol {
 final class NetworkService: NetworkServiceProtocol {
   
   private let baseURL: String = "https://api.openweathermap.org/data/2.5/onecall"
+  private let citiesURL: String = "http://bulk.openweathermap.org/sample/city.list.json.gz"
+  private let baseImageURL: String = "http://openweathermap.org/img/wn/"
   private let apiKey: String = "772673b3efd53c9a74c8a5c6ec2fea33"
   
-  func getWeather(latitude: Double,
+  /// Получение данных о погоде из сети по координатам локации
+  /// - Parameters:
+  ///   - latitude: широта локации
+  ///   - longitude: долгота локаци
+  ///   - completion: блок с ответом от сервера
+  public func getWeather(latitude: Double,
                   longitude: Double,
                   completion: @escaping (Result<[String: Any]?,Error>) -> Void) {
     
@@ -77,8 +71,11 @@ final class NetworkService: NetworkServiceProtocol {
   }
   
   
-  func getCities(completion: @escaping (Result<[[String: Any]]?,Error>) -> Void) {
-    guard let url: URL = URL(string: "http://bulk.openweathermap.org/sample/city.list.json.gz") else {return}
+  /// Получение данных о городах
+  /// - Parameter completion: блок с ответом от сервера
+  public func getCities(completion: @escaping (Result<[[String: Any]]?,Error>) -> Void) {
+    
+    guard let url: URL = URL(string: self.citiesURL) else {return}
     
     let session = URLSession(configuration: .default)
     
@@ -103,16 +100,20 @@ final class NetworkService: NetworkServiceProtocol {
             }
           }
         }
-      
       dataTask?.resume()
     }
   }
   
+  
+  /// Загрузка изображений с сервера
+  /// - Parameters:
+  ///   - url: URL изображения
+  ///   - completion: блок с ответом от сервера
   func loadIcon(byUrl url: String, completion: @escaping (Result<Data?,Error>) -> Void) {
-    let baseURL: String = "http://openweathermap.org/img/wn/"
+    
     let postfix: String = "@2x.png"
     
-    guard let url: URL = URL(string: baseURL + url + postfix) else {return}
+    guard let url: URL = URL(string: self.baseImageURL + url + postfix) else {return}
     let session = URLSession(configuration: .default)
     
     DispatchQueue.global().async {

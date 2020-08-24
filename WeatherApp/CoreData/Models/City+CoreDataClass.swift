@@ -28,6 +28,5 @@ public class City: NSManagedObject {
     self.country = json["country"] as? String ?? ""
     self.latitude = coordinates["lat"] as? Double ?? 0
     self.longitude = coordinates["lon"] as? Double ?? 0
-
   }
 }

@@ -12,11 +12,25 @@ class Router {
   
   weak var presenter: WeatherPresenterProtocol?
   
-  func returnToWeatherForecast(from viewController: CitiesTableViewController?,
-                               for city: City) {
+  /// Возвращение на экран погоды для выбранного города
+  /// - Parameters:
+  ///   - viewController: view controller текущего экрана
+  ///   - city: выбранный город
+  public func returnToWeatherForecast(from viewController: CitiesTableViewController?,
+                                      for city: City) {
     guard let presenter = self.presenter else {return}
     presenter.loadData(for: city)
     viewController?.navigationController?.popViewController(animated: true)
+  }
+  
+  /// Переход на экран выбора города
+  /// - Parameters:
+  ///   - viewController: view controller текущего экрана
+  public func chooseCity(from viewController: WeatherViewController?) {
+    let citiesVC = Builder.buildCities(with: self)
+    let navigationController = viewController?.navigationController
+    navigationController?.navigationBar.isHidden = false
+    navigationController?.pushViewController(citiesVC, animated: true)
   }
   
 }

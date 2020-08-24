@@ -19,13 +19,14 @@ class ForecastWeatherViewCell: UICollectionViewCell {
   
   private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .medium)
   
+  //MARK: - Initialization
+
   override func awakeFromNib() {
     super.awakeFromNib()
     self.layer.cornerRadius = 20
     self.layer.masksToBounds = true
     self.contentView.backgroundColor = .systemGray2
-    self.contentView.addSubview(self.dateLabel)
-    self.contentView.addSubview(self.weatherIconView)
+
     self.weatherIconView.addSubview(self.activityIndicatorView)
     self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
@@ -34,10 +35,12 @@ class ForecastWeatherViewCell: UICollectionViewCell {
       self.activityIndicatorView.centerYAnchor.constraint(
         equalTo: self.weatherIconView.centerYAnchor)
     ])
-    self.contentView.addSubview(self.dayTemperatureLabel)
-    self.contentView.addSubview(nightTemperatureLabel)
   }
   
+  //MARK: - UI configuration with data
+  
+  /// Настройка вида ячейки с данными модели
+  /// - Parameter model: модель данных
   public func configure(with model: ForecastWeatherViewModel) {
     self.dateLabel.text = model.date
     if let weatherIcon = model.weatherIcon {
@@ -52,6 +55,8 @@ class ForecastWeatherViewCell: UICollectionViewCell {
     self.nightTemperatureLabel.text = "\(model.tempNight)\u{00B0}C"
   }
   
+  /// Настройка пустой ячейки
+  /// - Parameter today: текущая дата
   public func configureWithEmptyData(today: String) {
     self.dateLabel.text = today
     self.activityIndicatorView.isHidden = false

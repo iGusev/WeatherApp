@@ -12,14 +12,15 @@ class WeatherViewController: UIViewController {
 
   private var currentWeatherView: CurrentWeatherView?
   private var forecastWeatherView: ForecastWeatherCollectionView?
-  private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(style: .large)
+  private var activityIndicatorView: UIActivityIndicatorView = UIActivityIndicatorView(
+    style: .large)
   
   private let itemMargin: CGFloat = 20
   
-  private var presenter: WeatherPresenter
+  private var presenter: WeatherPresenterProtocol
 
   // MARK: - Init
-  init(presenter: WeatherPresenter) {
+  init(presenter: WeatherPresenterProtocol) {
    self.presenter = presenter
    super.init(nibName: nil, bundle: nil)
   }
@@ -34,18 +35,66 @@ class WeatherViewController: UIViewController {
     self.presenter.loadData()
   }
   
+  //MARK: - Update views
+  /// Обновление сабвью
+  public func updateView() {
+     DispatchQueue.main.async {
+       guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
+       self.currentWeatherView?.configure(with: currentWeatherViewModel)
+       self.forecastWeatherView?.reloadData()
+       self.view.setNeedsLayout()
+       self.view.layoutIfNeeded()
+       self.showActivityIndicator(false)
+     }
+   }
+  
+  /// Обновление сабвью без данных
+  /// - Parameter today: текущеая дата в строковом виде
+   public func updateViewWithEmptyData(today: String) {
+     DispatchQueue.main.async {
+       self.currentWeatherView?.configureWithEmptyData(today: today)
+       self.forecastWeatherView?.reloadData()
+       self.view.setNeedsLayout()
+       self.view.layoutIfNeeded()
+       self.showActivityIndicator(false)
+     }
+   }
+  
+  /// Показывает / скрывает индикатор загрузки данных
+  /// - Parameter isLoading: булевый параметр показа / скрытия индикатора
+   public func showActivityIndicator(_ isLoading: Bool) {
+     DispatchQueue.main.async {
+       self.activityIndicatorView.isHidden = !isLoading
+       isLoading ?
+        self.activityIndicatorView.startAnimating() : self.activityIndicatorView.stopAnimating()
+     }
+   }
+  
+  /// Показывает сообщение об отсутствии данных
+   public func showNoDataAlert() {
+     DispatchQueue.main.async {
+       let alertVC = UIAlertController(title: "Уведомление", message: "Для загрузки погодных данных выберите местоположение", preferredStyle: .alert)
+       
+       alertVC.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
+       self.present(alertVC, animated: true, completion: nil)
+     }
+   }
+  
+  //MARK: - UI configuration
   private func configureUI() {
     self.view.backgroundColor = .systemGray3
     
+    self.configureCurrentWeatherView()
+    self.configureForecastWeatherView()
+    self.configureActivityIndicator()
+  }
+  
+  private func configureCurrentWeatherView() {
     self.currentWeatherView = CurrentWeatherView(frame: .zero,
                                                  onButtonTap: {
-                                                  self.presenter.locationButtonOnTap()
-    })
-    self.forecastWeatherView = ForecastWeatherCollectionView()
-    guard let currentWeatherView = self.currentWeatherView,
-          let forecastWeatherView = self.forecastWeatherView else {return}
+                                                  self.presenter.locationButtonOnTap()})
+    guard let currentWeatherView = self.currentWeatherView else {return}
     self.view.addSubview(currentWeatherView)
-    self.view.addSubview(forecastWeatherView)
     
     currentWeatherView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
@@ -53,6 +102,14 @@ class WeatherViewController: UIViewController {
       currentWeatherView.trailingAnchor.constraint(equalTo: self.view.trailingAnchor),
       currentWeatherView.topAnchor.constraint(equalTo: self.view.topAnchor)
     ])
+  }
+
+  private func configureForecastWeatherView() {
+    self.forecastWeatherView = ForecastWeatherCollectionView()
+    
+    guard let currentWeatherView = self.currentWeatherView,
+             let forecastWeatherView = self.forecastWeatherView else {return}
+    self.view.addSubview(forecastWeatherView)
     
     forecastWeatherView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
@@ -66,80 +123,41 @@ class WeatherViewController: UIViewController {
     
     forecastWeatherView.delegate = self
     forecastWeatherView.dataSource = self
-    
+  }
+  
+  private func configureActivityIndicator() {
     self.view.addSubview(self.activityIndicatorView)
     self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
+    
     NSLayoutConstraint.activate([
       self.activityIndicatorView.centerXAnchor.constraint(
         equalTo: self.view.centerXAnchor),
       self.activityIndicatorView.centerYAnchor.constraint(
         equalTo: self.view.centerYAnchor)
     ])
+    
     self.activityIndicatorView.isHidden = true
   }
-  
-  public func updateView() {
-    DispatchQueue.main.async {
-      guard let currentWeatherViewModel = self.presenter.currentWeatherModel else {return}
-      self.currentWeatherView?.configure(with: currentWeatherViewModel)
-      self.forecastWeatherView?.reloadData()
-      self.view.setNeedsLayout()
-      self.view.layoutIfNeeded()
-      self.showActivityIndicator(false)
-    }
-  }
-  
-  public func updateViewWithEmptyData(today: String) {
-    DispatchQueue.main.async {
-      self.currentWeatherView?.configureWithEmptyData(today: today)
-      self.forecastWeatherView?.reloadData()
-      self.view.setNeedsLayout()
-      self.view.layoutIfNeeded()
-      self.showActivityIndicator(false)
-    }
-  }
-  
-  public func showActivityIndicator(_ isLoading: Bool) {
-    DispatchQueue.main.async {
-      self.activityIndicatorView.isHidden = !isLoading
-      isLoading ? self.activityIndicatorView.startAnimating() : self.activityIndicatorView.stopAnimating()
-    }
-  }
-  
-  public func showNoDataAlert() {
-    DispatchQueue.main.async {
-      let alertVC = UIAlertController(title: "Уведомление", message: "Для загрузки погодных данных выберите местоположение", preferredStyle: .alert)
-      
-      alertVC.addAction(UIAlertAction(title: "ОК", style: .default, handler: nil))
-      self.present(alertVC, animated: true, completion: nil)
-    }
-  }
-
 }
 
+//MARK: - CollectionView delegate and datasource
 extension WeatherViewController:
           UICollectionViewDelegate,
           UICollectionViewDataSource,
           UICollectionViewDelegateFlowLayout {
+  
   func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-    return self.presenter.forecastWeatherModels.count > 0 ? self.presenter.forecastWeatherModels.count : 7
+    return self.presenter.collectionView(collectionView, numberOfItemsInSection: section)
   }
   
   func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-    let cell = self.forecastWeatherView?.dequeueReusableCell(
-      withReuseIdentifier: ForecastWeatherViewCell.cellIdentifier,
-      for: indexPath) as! ForecastWeatherViewCell
-    if self.presenter.forecastWeatherModels.count == 0 {
-      cell.configureWithEmptyData(today: "23.08")
-    } else {
-      cell.configure(with: self.presenter.forecastWeatherModels[indexPath.item])
-    }
-    return cell
+    return self.presenter.collectionView(collectionView, cellForItemAt: indexPath)
   }
   
   func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
-    let itemWidth = collectionView.frame.width / 3
-    return CGSize(width: itemWidth, height: itemWidth)
+    return self.presenter.collectionView(collectionView,
+                                         layout: collectionViewLayout,
+                                         sizeForItemAt: indexPath)
   }
   
 }

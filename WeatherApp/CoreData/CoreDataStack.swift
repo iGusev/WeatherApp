@@ -9,32 +9,29 @@
 import CoreData
 
 extension NSManagedObjectContext {
-  
+
+  /// Возвращает объекты из базы CoreData
+  /// - Parameter type: тип возвращаемого объекта
+  /// - Returns: массив объектов заданного типа
   func fetchObjects<T>(with type: T.Type) -> [T]? {
     let request: NSFetchRequest<NSFetchRequestResult>
     let entityName = String(describing: T.self)
     request = NSFetchRequest(entityName: entityName)
 
     let fetchedResult = try? request.execute() as? [T]
-//    let result = (fetchedResult?[0])! as! CurrentWeather
-//    print(result.feelsLike)
     return fetchedResult
   }
+  
+}
+
+protocol DatabaseServiceProtocol {
+  func save()
+  func deleteOldWeatherData()
+  func deleteCitiesData()
+  func fetchObjects<T>(with type: T.Type, completion: @escaping (([T]) -> Void))
 }
 
 final class CoreDataStack: DatabaseServiceProtocol {
-  
-// MARK: - Core Data stack
-
- lazy private var persistentContainer: NSPersistentContainer = {
-   let container = NSPersistentContainer(name: "WeatherApp")
-   container.loadPersistentStores(completionHandler: { (storeDescription, error) in
-       if let error = error as NSError? {
-           fatalError("Unresolved error \(error), \(error.userInfo)")
-       }
-   })
-   return container
- }()
   
   public lazy var mainContext: NSManagedObjectContext = {
     let context = NSManagedObjectContext(concurrencyType: .mainQueueConcurrencyType)
@@ -43,31 +40,44 @@ final class CoreDataStack: DatabaseServiceProtocol {
     return context
   }()
   
+  lazy private var persistentContainer: NSPersistentContainer = {
+   let container = NSPersistentContainer(name: "WeatherApp")
+   container.loadPersistentStores(completionHandler: { (storeDescription, error) in
+       if let error = error as NSError? {
+           fatalError("Unresolved error \(error), \(error.userInfo)")
+       }
+   })
+   return container
+  }()
+  
+  /// Возвращает приватный контекст для CoreData
+  /// - Returns: контекст
   public func makePrivateContext() -> NSManagedObjectContext {
-      let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-      context.parent = self.mainContext
-      return context
+    let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
+    context.parent = self.mainContext
+    return context
   }
-
- // MARK: - Core Data Saving support
-
- func save() {
-  self.mainContext.perform {
-    if self.mainContext.hasChanges {
-       do {
+  
+  // MARK: - Core Data Saving support
+  /// Сохраняет изменения в главном контексте в базу
+  public func save() {
+    self.mainContext.perform {
+      if self.mainContext.hasChanges {
+        do {
         try self.mainContext.save()
         self.mainContext.reset()
         print("Changes in context saved")
-       } catch {
-        self.mainContext.rollback()
-        let nserror = error as NSError
-        fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-       }
-     }
+        } catch {
+          self.mainContext.rollback()
+          let nserror = error as NSError
+          fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
+        }
+      }
     }
- }
+  }
   
-  func deleteOldWeatherData() {
+  /// Удаляет ранее загруженные данные погоды
+  public func deleteOldWeatherData() {
     let privateContext = self.makePrivateContext()
     privateContext.perform {
       let currentRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(
@@ -80,12 +90,6 @@ final class CoreDataStack: DatabaseServiceProtocol {
         try privateContext.execute(deleteCurrentRequest)
         try privateContext.execute(deleteForecastRequest)
         try privateContext.save()
-//        do {
-//          try self.mainContext.save()
-//        } catch {
-//          let nserror = error as NSError
-//          fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-//        }
       } catch {
         let nserror = error as NSError
         fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
@@ -93,7 +97,8 @@ final class CoreDataStack: DatabaseServiceProtocol {
     }
   }
   
-  func deleteCitiesData() {
+  /// Удаляет ранее загруженные данные городов
+  public func deleteCitiesData() {
     let privateContext = self.makePrivateContext()
     privateContext.perform {
       let citiesRequest: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(
@@ -102,12 +107,6 @@ final class CoreDataStack: DatabaseServiceProtocol {
       do {
         try privateContext.execute(deleteRequest)
         try privateContext.save()
-//        do {
-//          try self.mainContext.save()
-//        } catch {
-//          let nserror = error as NSError
-//          fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
-//        }
       } catch {
         let nserror = error as NSError
         fatalError("Unresolved error \(nserror), \(nserror.userInfo)")
@@ -115,34 +114,17 @@ final class CoreDataStack: DatabaseServiceProtocol {
     }
   }
   
-  func fetchObjects<T>(with type: T.Type, completion: @escaping (([T]) -> Void)) {
+  /// Возвращает объекты из базы CoreData
+  /// - Parameters:
+  ///   - type: тип возвращаемого объекта
+  ///   - completion: блок с массивом объектов из базы
+  public func fetchObjects<T>(with type: T.Type, completion: @escaping (([T]) -> Void)) {
     let context = self.makePrivateContext()
     context.perform {
       let results = context.fetchObjects(with: T.self)
-//    }
-    
-//    for result in results! {
-//      let weather = result as? CurrentWeather
-//      print(weather?.feelsLike)
-//    }
-    guard let unwrapped = results else {return}
-//    print(unwrapped[0])
-//    let weather = unwrapped[0] as? CurrentWeather
-//    print(weather?.feelsLike)
-    completion(unwrapped)
-  }
-//    guard let managedObject = T.self as? NSManagedObject.Type else {return nil}
-//    let request = managedObject.fetchRequest()
-////    let type = managedObject
-////    let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: String(describing: T.self))
-////    let request: NSFetchRequest<managedObject.Type> = NSFetchRequest(entityName: String(describing: T.self))
-//    print(request)
-//    let results = try? self.makePrivateContext().fetch(request) as? [T]
-//    for result in results! {
-//      let weather = result as? CurrentWeather
-//      print(weather?.feelsLike)
-//    }
-//    return results
+      guard let unwrapped = results else {return}
+      completion(unwrapped)
+    }
   }
 
 }

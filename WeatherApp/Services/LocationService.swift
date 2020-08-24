@@ -9,33 +9,6 @@
 import Foundation
 import CoreLocation
 
-/// Ошибка в геолокации
-enum LocationError: Error {
-  case cannotGetCurrentLocation
-}
-
-extension LocationError: LocalizedError {
-  public var errorDescription: String? {
-    switch self {
-    case .cannotGetCurrentLocation:
-      return "Не удалось получить текущую геопозицию"
-    }
-  }
-}
-
-extension CLLocationCoordinate2D: Equatable {
-  
-  public static func == (lhs: Self, rhs: Self) -> Bool {
-    if lhs.latitude == rhs.latitude && lhs.longitude == rhs.longitude {
-      return true
-    } else {
-      return false
-    }
-  }
-  
-}
-
-
 protocol LocationServiceProtocol: NSObject {
   var location: CLLocation? {get set}
   var delegate: LocationDelegate? {get set}
@@ -56,8 +29,10 @@ final class LocationService: NSObject, LocationServiceProtocol {
     self.configureLocationManager()
   }
   
-  private let locationManager = CLLocationManager()
+  /// Делегат для получения уведомлений об обновлении местоположения
   public weak var delegate: LocationDelegate?
+  
+  private let locationManager = CLLocationManager()
   
   /// Запрос местоположения
   public func requestLocation() {

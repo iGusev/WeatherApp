@@ -26,6 +26,7 @@ class CurrentWeatherView: UIView {
   
   private var onButtonTap: (() -> Void)?
   
+  //MARK: - Init
   init(frame: CGRect, onButtonTap: @escaping (() -> Void)) {
     self.onButtonTap = onButtonTap
     super.init(frame: frame)
@@ -38,8 +39,8 @@ class CurrentWeatherView: UIView {
     nibSetup()
     configureUI()
   }
-   
-  func nibSetup() {
+  
+  private func nibSetup() {
     Bundle.main.loadNibNamed(String(describing: CurrentWeatherView.self), owner: self, options: nil)
     self.addSubview(self.contentView)
     self.contentView.translatesAutoresizingMaskIntoConstraints = false
@@ -51,6 +52,9 @@ class CurrentWeatherView: UIView {
     ])
   }
 
+  //MARK: - Configuration with data
+  /// Настройка с данными модели
+  /// - Parameter model: модель данных
   public func configure(with model: CurrentWeatherViewModel) {
     self.currentDateLabel.text = model.date
     if let weatherIcon = model.weatherIcon {
@@ -76,6 +80,8 @@ class CurrentWeatherView: UIView {
     self.contentView.layoutIfNeeded()
   }
   
+  ///Настройка пустого вью
+  /// - Parameter today: текущая дата
   public func configureWithEmptyData(today: String) {
     self.currentDateLabel.text = today
     self.activityIndicatorView.isHidden = false
@@ -93,21 +99,18 @@ class CurrentWeatherView: UIView {
   }
   
   
+  /// Действие по нажатию кнопки выбора местоположения
   @IBAction func locationButtonOnTap(_ sender: Any) {
     guard let action = self.onButtonTap else {return}
     action()
   }
   
+  //MARK: - UI configuration
   private func configureUI() {
-    self.locationButton.setTitle("Текущее местоположение", for: .normal)
-    self.locationButton.layer.cornerRadius = 10
-    self.locationButton.layer.masksToBounds = true
-    self.locationButton.layer.borderColor = UIColor.systemIndigo.cgColor
-    self.locationButton.layer.borderWidth = 1
-    self.locationButton.isHidden = true
     self.currentDateLabel.text = nil
     self.currentTemperatureLabel.text = nil
     self.weatherIcon.addSubview(self.activityIndicatorView)
+    
     self.activityIndicatorView.translatesAutoresizingMaskIntoConstraints = false
     NSLayoutConstraint.activate([
       self.activityIndicatorView.centerXAnchor.constraint(
@@ -116,6 +119,7 @@ class CurrentWeatherView: UIView {
         equalTo: self.weatherIcon.centerYAnchor)
     ])
     
+    self.configureLocationButton()
     self.configureWeatherDescriptionLabel()
     self.configureFeelsLikeLabel()
     self.configurePressureLabel()
@@ -123,6 +127,15 @@ class CurrentWeatherView: UIView {
     self.configureWindSpeedLabel()
     self.configureUVIndexLabel()
    }
+  
+  private func configureLocationButton() {
+    self.locationButton.setTitle("Текущее местоположение", for: .normal)
+    self.locationButton.layer.cornerRadius = 10
+    self.locationButton.layer.masksToBounds = true
+    self.locationButton.layer.borderColor = UIColor.systemIndigo.cgColor
+    self.locationButton.layer.borderWidth = 1
+    self.locationButton.isHidden = true
+  }
    
   private func configureWeatherDescriptionLabel() {
     let label = UILabel()
