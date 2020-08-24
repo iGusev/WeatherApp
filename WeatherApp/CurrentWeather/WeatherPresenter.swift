@@ -199,6 +199,7 @@ final class WeatherPresenter: WeatherPresenterProtocol {
       let weathers = results
       let sortedWeathers = weathers.sorted(by: {$0.date! < $1.date!})
       
+      let lock: DispatchQueue = DispatchQueue.init(label: "")
       for weather in sortedWeathers {
         guard let date = weather.date else {return}
         let formattedDate = self.dateFormatter.string(from: date as Date)
@@ -207,8 +208,10 @@ final class WeatherPresenter: WeatherPresenterProtocol {
           tempNight: String(format: "%.0f", weather.tempNight.rounded()),
           date: formattedDate,
           weatherIconURL: weather.weatherIcon ?? "",
-          weatherIcon: nil)
-        self.forecastWeatherModels.append(forecastWeatherModel)
+          weatherIcon: nil)        
+        lock.sync{
+          self.forecastWeatherModels.append(forecastWeatherModel)
+        }
       }
       
       self.loadForecastWeatherIcons()
